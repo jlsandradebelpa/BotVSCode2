@@ -1,0 +1,46 @@
+{
+  "projetos": [
+    {
+      "nome": "intprotheussoc",
+      "caminhos_possiveis": [
+        "C:\\Projetos\\intprotheussoc",
+        "D:\\TOTVS\\Projetos\\CBAA_ASFALTOS\\intprotheussoc",
+        "E:\\Totvs\\Projetos\\CBAA_ASFALTOS\\intprotheussoc"
+      ],
+      "branch_padrao": "main",
+      "remote": "origin"
+    },
+    {
+      "nome": "cbaa_asfaltos_empresa",
+      "caminhos_possiveis": [
+        "D:\\TOTVS\\Projetos\\CBAA_ASFALTOS\\cbaa_asfaltos_empresa"
+      ],
+      "branch_padrao": "main",
+      "remote": "origin"
+    },
+    {
+      "nome": "botvscode",
+      "caminhos_possiveis": [
+        "C:\\Projetos\\botvscode"
+      ],
+      "branch_padrao": "main",
+      "remote": "origin"
+    },
+    {
+      "nome": "OpenCodeSessionExplorer",
+      "caminhos_possiveis": [
+        "C:\\projetos\\OpenCodeSessionExplorer"
+      ],
+      "branch_padrao": "master",
+      "remote": "origin"
+    },
+    {
+      "nome": "Dicionario_Dados_Protheus_CBAA",
+      "caminhos_possiveis": [
+        "C:\\projetos\\Dicionario_Dados_Protheus_CBAA"
+      ],
+      "branch_padrao": "main",
+      "remote": "origin"
+    }
+  ]
+}

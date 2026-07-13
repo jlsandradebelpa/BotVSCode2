@@ -1,0 +1,2 @@
+# Fase 1 — Sem dependências externas.
+# Apenas biblioteca padrão do Python 3.13+.

@@ -1,0 +1,49 @@
+[
+  {
+    "nome": "ImpProtheusSOC",
+    "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/intprotheussoc",
+    "branch": "main",
+    "linguagem": "ADVPL",
+    "github_repo": "jlsandradebelpa/intprotheussoc"
+  },
+  {
+    "nome": "CBAA_Asfaltos_Empresa",
+    "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/cbaa_asfaltos_empresa",
+    "branch": "main",
+    "linguagem": "ADVPL",
+    "github_repo": "jlsandradebelpa/CBAA_Asfaltos_Empresa"
+  },
+  {
+    "nome": "MemCalcExplorer",
+    "pasta": "TOTVS/Projetos/MemCalcExplorer",
+    "branch": "main",
+    "linguagem": "Python"
+  },
+  {
+    "nome": "Prj_TIR",
+    "pasta": "TOTVS/Projetos/Prj_TIR",
+    "branch": "main",
+    "linguagem": "Python"
+  },
+  {
+    "nome": "BotVSCode",
+    "pasta": "C:\\Projetos\\BotVSCode",
+    "branch": "main",
+    "linguagem": "Python",
+    "github_repo": "jlsandradebelpa/botvscode"
+  },
+  {
+    "nome": "OpenCodeSessionExplorer",
+    "pasta": "C:\\projetos\\OpenCodeSessionsExplorer",
+    "branch": "master",
+    "linguagem": "Python",
+    "github_repo": "jlsandradebelpa/OpenCodeSessionExplorer"
+  },
+  {
+    "nome": "candidato_cbaa",
+    "pasta": "/Projetos/candidato_cbaa",    
+    "branch": "master",
+    "linguagem": "ADVPL",
+    "github_repo": "jlsandradebelpa/candidato_cbaa"
+  }
+]

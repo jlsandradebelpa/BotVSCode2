@@ -62,6 +62,7 @@ class BotVSCode2App:
     def _mudar_aba(self, page: ft.Page, index: int) -> None:
         if index == 0:
             nova_pagina = self._inicio_page.construir()
+            self._inicio_page.definir_projeto(self._projeto_atual)
         elif index == 1:
             nova_pagina = self._projetos_page.construir()
         elif index == 2:
@@ -91,7 +92,6 @@ class BotVSCode2App:
         )
 
         self._inicio_page.definir_on_mensagem(self._on_mensagem)
-        self._inicio_page.definir_projeto(self._projeto_atual)
         self._projetos_page.definir_on_mensagem(self._on_mensagem)
         self._projetos_page.definir_on_projeto_selecionado(self._on_projeto_selecionado)
 
@@ -104,8 +104,10 @@ class BotVSCode2App:
             bgcolor=ft.Colors.GREY_800,
         )
 
+        pagina_inicial = self._inicio_page.construir()
+        self._inicio_page.definir_projeto(self._projeto_atual)
         self._content = ft.Container(
-            content=self._inicio_page.construir(),
+            content=pagina_inicial,
             padding=ft.Padding(left=16, top=16, right=16, bottom=16),
             expand=True,
         )

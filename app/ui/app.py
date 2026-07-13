@@ -41,8 +41,7 @@ class BotVSCode2App:
             self._github_service,
             config.workspace_drive,
         )
-        self._file_picker = ft.FilePicker()
-        self._projetos_page = ProjetosPage(self._project_service, self._file_picker)
+        self._projetos_page = ProjetosPage(self._project_service)
         self._atividades_page = AtividadesPage(self._historico_service)
         self._configuracoes_page = ConfiguracoesPage()
 
@@ -120,8 +119,6 @@ class BotVSCode2App:
             bgcolor=ft.Colors.GREY_800,
             border=ft.Border(top=ft.BorderSide(1, ft.Colors.GREY_700)),
         )
-
-        page.overlay.append(self._file_picker)
 
         page.add(
             ft.Column([

@@ -9,8 +9,9 @@ from services.project_service import ProjectService
 
 
 class ProjetosPage:
-    def __init__(self, project_service: ProjectService) -> None:
+    def __init__(self, project_service: ProjectService, file_picker: ft.FilePicker) -> None:
         self._service = project_service
+        self._file_picker = file_picker
         self._indice_edicao: Optional[int] = None
         self._on_mensagem: Callable[[str], None] = lambda msg: None
         self._on_projeto_selecionado: Callable[[Optional[Projeto]], None] = lambda p: None
@@ -25,7 +26,6 @@ class ProjetosPage:
         self._lista_container = ft.Column(spacing=4)
         self._carregar_lista()
 
-        self._file_picker = ft.FilePicker()
         self._file_picker.on_result = self._ao_pasta_selecionada
 
         self._txt_nome = ft.TextField(label="Nome", hint_text="Nome do projeto", expand=True)
@@ -97,10 +97,6 @@ class ProjetosPage:
         ], expand=True)
 
     def _ao_buscar_pasta(self, e: ft.ControlEvent) -> None:
-        page = e.control.page
-        if self._file_picker not in page.overlay:
-            page.overlay.append(self._file_picker)
-            page.update()
         self._file_picker.get_directory_path()
 
     def _ao_pasta_selecionada(self, e: ft.ControlEvent) -> None:

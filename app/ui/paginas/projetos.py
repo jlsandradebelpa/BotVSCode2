@@ -25,8 +25,17 @@ class ProjetosPage:
         self._lista_container = ft.Column(spacing=4)
         self._carregar_lista()
 
+        self._file_picker = ft.FilePicker()
+        self._file_picker.on_result = self._ao_pasta_selecionada
+
         self._txt_nome = ft.TextField(label="Nome", hint_text="Nome do projeto", expand=True)
         self._txt_pasta = ft.TextField(label="Pasta Local", hint_text="Caminho ou relativo ao workspace", expand=True)
+        self._btn_buscar = ft.IconButton(
+            icon=ft.Icons.FOLDER_OPEN,
+            tooltip="Procurar pasta",
+            on_click=self._ao_buscar_pasta,
+        )
+
         self._txt_branch = ft.TextField(label="Branch", hint_text="main", expand=True)
         self._txt_linguagem = ft.TextField(label="Linguagem", hint_text="ADVPL, Python, ...", expand=True)
         self._txt_github = ft.TextField(label="GitHub", hint_text="user/repo (opcional)", expand=True)
@@ -66,7 +75,7 @@ class ProjetosPage:
                 ft.Text("Configuração", size=18, weight=ft.FontWeight.BOLD),
                 ft.Divider(height=1, color=ft.Colors.GREY_700),
                 self._txt_nome,
-                self._txt_pasta,
+                ft.Row([self._txt_pasta, self._btn_buscar], spacing=4),
                 self._txt_branch,
                 self._txt_linguagem,
                 self._txt_github,
@@ -86,6 +95,18 @@ class ProjetosPage:
             ft.Container(width=16),
             form_card,
         ], expand=True)
+
+    def _ao_buscar_pasta(self, e: ft.ControlEvent) -> None:
+        page = e.control.page
+        if self._file_picker not in page.overlay:
+            page.overlay.append(self._file_picker)
+            page.update()
+        self._file_picker.get_directory_path()
+
+    def _ao_pasta_selecionada(self, e: ft.ControlEvent) -> None:
+        if e.path:
+            self._txt_pasta.value = e.path
+            self._txt_pasta.update()
 
     def _carregar_lista(self) -> None:
         self._lista_container.controls.clear()

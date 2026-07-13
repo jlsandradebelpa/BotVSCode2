@@ -1,70 +1,38 @@
-# Roadmap — BotVSCode / JA WorkStart
+# Roadmap — BotVSCode2
 
-## Fase 0 — Infraestrutura *(Concluída)*
+## Fase 2 — Interface Gráfica Flet *(Concluída)*
 
-- [x] Repositório GitHub (`jlsandradebelpa/botvscode`)
-- [x] GitHub Project com Board (Pendente → Em andamento → Concluído)
-- [x] 15 issues iniciais com labels
-- [x] Estrutura de diretórios (`app/`, `config/`, `docs/`, `tests/`, `assets/`)
-- [x] Documentação base (README, ROADMAP, ARQUITETURA, PROJECT_GITHUB)
-- [x] Diretrizes de desenvolvimento documentadas
+- [x] Cópia integral do BotVSCode original (baseline congelada)
+- [x] Repositório GitHub (`jlsandradebelpa/BotVSCode2`)
+- [x] GitHub Project com Board (BotVSCode2)
+- [x] 7 issues iniciais
+- [x] Atalho na Área de Trabalho
+- [x] **Tela Início**: projeto atual, status Git/VSCode, botões Iniciar/Encerrar
+- [x] **Tela Projetos**: CRUD completo (lista + formulário)
+- [x] **Tela Atividades**: histórico diário em tabela (somente leitura)
+- [x] **Tela Configurações**: placeholder para Fase 3
+- [x] **ProjetosManager**: CRUD completo (`save`, `adicionar`, `editar`, `remover`, `existe_nome`)
+- [x] **Camada Services**: 5 services desacoplados (Project, Git, GitHub, Historico, VSCode)
+- [x] **Histórico**: funções `listar()` e `listar_arquivos()`
+- [x] **VSCode**: função `close_vscode()`
+- [x] **Tema escuro** com componentes Flet nativos
+- [x] Persistência em `config/projetos.json` com `json.dump(indent=2, ensure_ascii=False)`
+- [x] Nenhuma regra de negócio alterada
+- [x] BotVSCode original intacto
 
-## Fase 1 — Núcleo *(Concluída)*
+## Fase 3 — Assistente IA *(Prevista)*
 
-- [x] Leitura de configuração (`config.json`)
-- [x] Cadastro e listagem de projetos (`projetos.json`)
-- [x] Detecção automática de unidade (D: / E:)
-- [x] Módulos stub preparados (git, vscode, speech)
+- [ ] Integração com IA (OpenAI, Gemini, Claude)
+- [ ] Chatbot embutido na interface
+- [ ] Automação RPO Protheus
+- [ ] MCP Server
+- [ ] LangChain / RAG
+- [ ] Sugestão inteligente de projetos
 
-## Fase 2 — Ciclo de Sincronização *(Concluída)*
+## Fase 4 — Distribuição *(Prevista)*
 
-- [x] Menu principal com dois modos: Iniciar Trabalho / Encerrar Trabalho
-- [x] Fluxo **Iniciar Trabalho**: fetch → compara branch → pull → abrir VS Code
-- [x] Fluxo **Encerrar Trabalho**: status → commit → push
-- [x] Validação de repositório Git
-- [x] Detecção de alterações locais
-- [x] Confirmação do usuário antes de ações destrutivas
-- [x] Abertura automática do VS Code
-- [x] Tratamento de erros (Git não instalado, VS Code não instalado)
-
-## Fase 3 — Self-Hosting: BotVSCode gerencia o próprio desenvolvimento *(Concluída)*
-
-- [x] BotVSCode adicionado à lista de projetos gerenciados
-- [x] Suporte genérico a caminhos absolutos em `resolve_full_path`
-- [x] Fluxos Iniciar/Encerrar Trabalho funcionando para o próprio projeto
-- [x] Documentação da atualização (FASE_03.md)
-
-## Fase 4 — Tarefas Pendentes e Histórico *(Concluída)*
-
-- [x] Campo `github_repo` no cadastro de projetos
-- [x] Consulta de GitHub Issues via API REST (`github_tools.py`)
-- [x] Listagem de tarefas pendentes ao final do fluxo "Iniciar Trabalho"
-- [x] Registro de histórico diário de atividades (`historico.py`)
-- [x] Tratamento de ausência de conexão ou token
-- [x] Documentação da atualização (FASE_04.md)
-
-## Fase 5 — Voz *(Não iniciada)*
-
-- [ ] Síntese de voz (confirmação falada, notificações)
-
-## Fase 6 — Assistente Inteligente *(Não iniciada)*
-
-- [ ] Execução em lote (sincronizar vários projetos)
-- [ ] Favoritar projetos mais usados
-- [ ] Sugestão de próximo projeto com base no histórico
-- [ ] Resumo automatizado de alterações (git log)
-
-## Fase 7 — IA *(Não iniciada)*
-
-- [ ] Assistente contextual via LLM local
-- [ ] Análise de diff com linguagem natural
-
-## Fase 6 — Distribuição *(Não iniciada)*
-
-- [ ] Atalho na Área de Trabalho ("BotVSCode")
-- [ ] Atalho no Menu Iniciar ("BotVSCode")
 - [ ] Instalador do sistema
-- [ ] Empacotamento (PyInstaller ou similar)
+- [ ] Empacotamento (PyInstaller)
 
 ---
 

@@ -1,122 +1,147 @@
-# Fase 2 — Ciclo de Sincronização
+# Fase 2 — Interface Gráfica Flet
 
 *Status: Concluída*
 
 ## Objetivo
 
-Implementar o ciclo completo de sincronização dos projetos entre ambientes de desenvolvimento (empresa ↔ casa), utilizando o GitHub como ponto central de sincronização.
+Substituir a interface em terminal por uma interface gráfica moderna utilizando **Flet**, mantendo 100% da lógica existente inalterada.
 
-## Visão Geral
+## Estratégia
 
-O BotVSCode passa a operar em dois modos principais:
+- **BotVSCode original** (`C:\projetos\botvscode`) permanece congelado como baseline
+- **BotVSCode2** (`C:\projetos\botvscode2`) é o novo projeto com interface gráfica
+- Nenhuma regra de negócio foi alterada
+- Interface é apenas uma nova camada visual sobre o sistema existente
 
-### Iniciar Trabalho
+## Arquitetura
 
-Prepara o ambiente antes do início do desenvolvimento:
-
-```
-Selecionar Projeto
-        ↓
-Localizar Projeto
-        ↓
-Validar repositório Git
-        ↓
-Executar Git Fetch
-        ↓
-Comparar branch local e remota
-        ↓
-Verificar alterações locais
-        ↓
-Informar situação ao usuário
-        ↓
-Perguntar se deseja atualizar
-        ↓
-Executar Git Pull
-        ↓
-Abrir Visual Studio Code
-```
-
-### Encerrar Trabalho
-
-Garante que todas as alterações sejam enviadas ao GitHub:
+### Camadas
 
 ```
-Selecionar Projeto
-        ↓
-Git Status
-        ↓
-Existem alterações?
-        ↓
-  Sim → Mostrar arquivos modificados
-         Solicitar mensagem do Commit
-         Executar Git Commit
-         Executar Git Push
-         Confirmar sincronização
-        ↓
-  Não → Push (garantir sincronização)
-        ↓
-Encerrar
+UI (Flet) → Services → Core (Regras de Negócio)
 ```
 
-## Funcionalidades Implementadas
+- **UI**: páginas Flet com componentes visuais
+- **Services**: camada intermediária que traduz chamadas da UI para as classes Core
+- **Core**: classes originais do BotVSCode (ProjetosManager, GitTools, etc.)
 
-- [x] Menu principal com dois modos: Iniciar Trabalho / Encerrar Trabalho
-- [x] Seleção de projeto antes de cada fluxo
-- [x] Validação de repositório Git
-- [x] Git Fetch (atualizar referências remotas)
-- [x] Comparação de branch local vs remota (ahead/behind)
-- [x] Detecção de alterações locais não commitadas
-- [x] Git Pull com confirmação do usuário
-- [x] Git Commit com mensagem personalizada
-- [x] Git Push com feedback de resultado
-- [x] Abertura automática do VS Code
-- [x] Tratamento de erros (Git não instalado, diretório não encontrado)
+### Services Criados
 
-## Módulos Envolvidos
+| Service | Função |
+|---------|--------|
+| `ProjectService` | CRUD de projetos via ProjetosManager |
+| `GitService` | Operações Git via GitTools |
+| `GitHubService` | Consulta de Issues via github_tools |
+| `HistoricoService` | Registro e listagem de histórico |
+| `VSCodeService` | Abrir/fechar VS Code |
 
-- `git_tools.py`: classe `GitTools` com métodos `is_git_repo()`, `fetch()`, `pull()`, `commit()`, `push()`, `status()`, `get_branch_status()`, `has_uncommitted_changes()`, `get_current_branch()`
-- `vscode.py`: funções `open_vscode()` e `is_vscode_installed()`
-- `menu.py`: fluxo completo dos dois modos de operação
+## Telas Implementadas
 
-## Fluxo Diário
+### Início
+- Projeto atual (nome, pasta, branch)
+- Botões **Iniciar Atividade** e **Encerrar Atividade**
+- Status Git (branch, ahead/behind)
+- Status VS Code (instalado/não encontrado)
+- Última sincronização e última atividade
+- Área de mensagens
 
-### Manhã (Empresa)
+### Projetos
+- Lista de projetos carregada de `config/projetos.json`
+- Formulário de cadastro/edição
+- CRUD completo: adicionar, editar, remover
+- Persistência com `json.dump(indent=2, ensure_ascii=False)`
 
-```text
-BotVSCode → Iniciar Trabalho → Git Pull → VS Code
+### Atividades
+- Tabela com histórico do dia (somente leitura)
+- Colunas: #, Hora, Tipo, Descrição
+
+### Configurações
+- Placeholder para Fase 3
+- Seções: VSCode, Git, GitHub, Tema, Histórico
+
+## Melhorias no Core
+
+### ProjetosManager (projetos.py)
+- `save()` — persistir lista em JSON
+- `adicionar(projeto)` — adicionar e salvar
+- `editar(index, projeto)` — substituir e salvar
+- `remover(index)` — remover e salvar
+- `existe_nome(nome)` — verificar duplicidade
+- `carregar()` — recarregar do arquivo
+
+### Histórico (historico.py)
+- `listar(pasta)` — retornar registros do dia como dicionários
+- `listar_arquivos(pasta)` — listar arquivos disponíveis
+
+### VS Code (vscode.py)
+- `close_vscode(project_path)` — fechar VS Code via taskkill
+
+## Fluxo "Iniciar Atividade"
+
+```
+1. Validar projeto selecionado
+2. Verificar se caminho existe
+3. Verificar se é repositório Git
+4. Executar Git Fetch
+5. Comparar branch local vs remota
+6. Se remoto à frente → Git Pull
+7. Abrir VS Code (se instalado)
+8. Registrar atividade no histórico
+9. Atualizar tela com status
 ```
 
-### Tarde (Empresa)
+## Fluxo "Encerrar Atividade"
 
-```text
-BotVSCode → Encerrar Trabalho → Commit → Push
+```
+1. Validar projeto selecionado
+2. Verificar alterações locais
+3. Se sem alterações → Push direto
+4. Se com alterações:
+   a. Diálogo: confirmar commit?
+   b. Diálogo: mensagem do commit
+   c. Stage All → Commit → Push
+5. Fechar VS Code (se configurado)
+6. Registrar atividade no histórico
+7. Atualizar tela com status
 ```
 
-### Noite (Casa)
+## Aparência
 
-```text
-BotVSCode → Iniciar Trabalho → Git Pull → VS Code
+- **Tema**: Dark (indigo seed)
+- **Fundo**: `GREY_900`
+- **Cards**: `GREY_800` com borda `GREY_700`
+- **Componentes**: nativos Flet
+- **Responsivo**: layout adaptável
+
+## Repositório GitHub
+
+- **URL**: https://github.com/jlsandradebelpa/BotVSCode2
+- **Project**: https://github.com/users/jlsandradebelpa/projects/9
+- **Issues**: 7 issues criadas e vinculadas ao projeto
+
+## Commits
+
 ```
-
-### Fim da noite (Casa)
-
-```text
-BotVSCode → Encerrar Trabalho → Commit → Push
+470018d Fase 2: Interface gráfica Flet + CRUD projetos + serviços
+ef7385e Adicionado seletor de pasta no campo Pasta Local
+4b3930e Corrigido FilePicker - adicionado ao overlay na inicialização
+15e0ccf Removido FilePicker - não suportado nesta versão do Flet
 ```
-
-Na manhã seguinte, ao iniciar na empresa, todas as alterações feitas em casa estarão disponíveis automaticamente.
-
-## Dependências Externas
-
-- Git instalado e acessível via PATH
-- VS Code instalado e com `code` no PATH (opcional para o fluxo)
 
 ## Critérios de Aceitação
 
-1. Menu exibe "Iniciar Trabalho" e "Encerrar Trabalho" como opções principais.
-2. Ao selecionar "Iniciar Trabalho", o fluxo executa fetch, verifica status e oferece pull.
-3. Ao selecionar "Encerrar Trabalho", detecta alterações e oferece commit+push.
-4. VS Code abre automaticamente após pull (se instalado).
-5. Mensagens de erro claras para Git não instalado, diretório inválido, etc.
-6. Commit exige mensagem não vazia do usuário.
-7. Push informa sucesso ou falha.
+1. ✅ Interface gráfica totalmente funcional (Flet)
+2. ✅ Tela Início pronta
+3. ✅ Tela Projetos pronta (CRUD completo)
+4. ✅ Tela Atividades pronta (histórico somente leitura)
+5. ✅ Tela Configurações pronta (placeholder)
+6. ✅ Cadastro de projetos funcionando
+7. ✅ Alteração de projetos funcionando
+8. ✅ Leitura do `config/projetos.json` funcionando
+9. ✅ Gravação do `config/projetos.json` funcionando
+10. ✅ Botão Iniciar Atividade funcionando
+11. ✅ Botão Encerrar Atividade funcionando
+12. ✅ Histórico funcionando
+13. ✅ Todas as funcionalidades atuais reutilizadas
+14. ✅ Nenhuma regra de negócio alterada
+15. ✅ BotVSCode original permanece intacto

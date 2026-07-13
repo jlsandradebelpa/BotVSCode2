@@ -1,38 +1,43 @@
-# BotVSCode
+# BotVSCode2
 
-> Assistente para preparação automática do ambiente de desenvolvimento.
+> Assistente para preparação automática do ambiente de desenvolvimento — Interface Gráfica.
 
 ## Descrição
 
-O BotVSCode é um assistente de produtividade que automatiza a preparação do ambiente de desenvolvimento no Visual Studio Code. Com um menu interativo no terminal, você seleciona o projeto desejado e o BotVSCode cuida do resto: abrir o VS Code, executar git pull, verificar status e muito mais.
+O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** utilizando **Flet**. Automatiza a preparação do ambiente de desenvolvimento: abrir VS Code, git pull/push/commit, registro de atividades e gerenciamento de projetos — tudo por uma interface visual intuitiva.
 
 ## Funcionalidades
 
-### Fase 1 — Núcleo (atual)
-- Menu interativo com listagem de projetos
-- Seleção de projeto por número
-- Detecção automática da unidade de disco (D: ou E:)
-- Exibição de detalhes do projeto selecionado
+### Fase 2 — Interface Gráfica (atual)
+- Interface gráfica com Flet (Dark Theme)
+- Tela **Início**: projeto atual, status Git/VSCode, botões Iniciar/Encerrar atividade
+- Tela **Projetos**: CRUD completo (cadastro, edição, remoção) com persistência em JSON
+- Tela **Atividades**: histórico diário em tabela (somente leitura)
+- Tela **Configurações**: placeholder preparado para Fase 3
+- Serviços desacoplados (camada Service entre UI e regras de negócio)
+- Backward compatible com `config/projetos.json` do BotVSCode original
 
-### Futuras
-- Git pull / status (Fase 2)
-- Abertura automática do VS Code (Fase 3)
-- Síntese de voz, múltiplos projetos, GitHub (Fase 4)
-- Sugestões com IA (Fase 5)
-- Distribuição com atalhos e instalador (Fase 6)
+### Legado (Fase 1 — Núcleo)
+- Leitura de configuração (`config.json`)
+- Cadastro e listagem de projetos
+- Detecção automática de unidade (D: / E:)
+- Operações Git (fetch, pull, commit, push, status)
+- Abertura automática do VS Code
+- Consulta de GitHub Issues
+- Registro de histórico diário
 
 ## Requisitos
 
 - Python 3.13 ou superior
-- Windows (devido à detecção de unidades D: e E:)
+- Windows
+- Git instalado e acessível via PATH
+- VS Code com `code` no PATH (opcional)
 
 ## Instalação
 
 ```bash
-cd C:\Projetos\botvscode
-python -m venv .venv
-.venv\Scripts\activate
-pip install -e .
+cd C:\projetos\botvscode2
+pip install flet
 ```
 
 ## Uso
@@ -41,20 +46,42 @@ pip install -e .
 python app/main.py
 ```
 
+Ou clique no atalho **BotVSCode2** na Área de Trabalho.
+
 ## Estrutura do Projeto
 
 ```
-botvscode/
-├── app/           # Código fonte
-├── config/        # Arquivos de configuração
-├── docs/          # Documentação
-├── scripts/       # Scripts de instalação e utilitários
-├── tests/         # Testes automatizados
-├── assets/        # Recursos (áudio, ícones)
-├── requirements.txt
-├── pyproject.toml
-├── README.md
-└── .gitignore
+botvscode2/
+├── app/
+│   ├── main.py              # Entry point Flet
+│   ├── config.py             # Configuração
+│   ├── projetos.py           # ProjetosManager com CRUD
+│   ├── menu.py               # Menu terminal (legado)
+│   ├── git_tools.py          # Operações Git
+│   ├── github_tools.py       # Consulta GitHub Issues
+│   ├── historico.py          # Histórico de atividades
+│   ├── vscode.py             # Controle do VS Code
+│   ├── utils.py              # Utilitários
+│   ├── services/             # Camada de serviços
+│   │   ├── project_service.py
+│   │   ├── git_service.py
+│   │   ├── github_service.py
+│   │   ├── historico_service.py
+│   │   └── vscode_service.py
+│   └── ui/                   # Interface gráfica Flet
+│       ├── app.py            # Orquestrador
+│       ├── tema.py           # Tema escuro
+│       ├── helpers.py        # Utilitários de UI
+│       ├── componentes/
+│       └── paginas/
+│           ├── inicio.py
+│           ├── projetos.py
+│           ├── atividades.py
+│           └── configuracoes.py
+├── config/                   # Configurações JSON
+├── docs/                     # Documentação
+├── logs/                     # Logs
+└── pyproject.toml
 ```
 
 ## Documentação
@@ -62,9 +89,7 @@ botvscode/
 - [Roadmap](docs/ROADMAP.md)
 - [Arquitetura](docs/ARQUITETURA.md)
 - [Configuração do GitHub](docs/PROJECT_GITHUB.md)
-- [Fase 0 — Infraestrutura](docs/FASE_00.md)
-- [Fase 1 — Núcleo](docs/FASE_01.md)
-- [Fase 2 — Git e VS Code](docs/FASE_02.md)
+- [Fase 2 — Interface Gráfica](docs/FASE_02.md)
 
 ## Licença
 

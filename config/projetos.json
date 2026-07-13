@@ -41,9 +41,17 @@
   },
   {
     "nome": "candidato_cbaa",
-    "pasta": "/Projetos/candidato_cbaa",    
+    "pasta": "/Projetos/candidato_cbaa",
     "branch": "master",
     "linguagem": "ADVPL",
     "github_repo": "jlsandradebelpa/candidato_cbaa"
+  },
+  {
+    "nome": "BotVsCode2",
+    "pasta": "C:\\projetos\\botvscode2",
+    "branch": "main",
+    "linguagem": "Python",
+    "github_repo": "jlsandradebelpa/BotVSCode2",
+    "historico_pasta": "C:\\projetos\\historico_atividades"
   }
 ]

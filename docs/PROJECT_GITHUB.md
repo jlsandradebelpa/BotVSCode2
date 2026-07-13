@@ -1,18 +1,18 @@
-# Configuração do GitHub — BotVSCode / JA WorkStart
+# Configuração do GitHub — BotVSCode2
 
 ## Repositório
 
-- **URL**: https://github.com/jlsandradebelpa/botvscode
+- **URL**: https://github.com/jlsandradebelpa/BotVSCode2
 - **Visibilidade**: Público
 - **Branch padrão**: `main`
 - **Labels**: `enhancement`, `documentation`, `testing`, `chore`
 
 ## GitHub Project
 
-- **Nome**: BotVSCode - JA WorkStart
-- **URL**: https://github.com/users/jlsandradebelpa/projects/6
+- **Nome**: BotVSCode2
+- **URL**: https://github.com/users/jlsandradebelpa/projects/9
 - **Visibilidade**: Privado
-- **Vinculado ao repositório**: `jlsandradebelpa/botvscode`
+- **Vinculado ao repositório**: `jlsandradebelpa/BotVSCode2`
 
 ### Views
 
@@ -37,30 +37,27 @@
 4. Nenhuma issue deve ficar sem status definido.
 5. O quadro (View 2) é o controle visual oficial do andamento.
 
-### Issues iniciais (15)
+### Issues da Fase 2
 
 | # | Título | Label |
 |---|--------|-------|
-| 1 | Criar estrutura base do projeto | enhancement |
-| 2 | Criar README inicial | documentation |
-| 3 | Criar ROADMAP do projeto | documentation |
-| 4 | Implementar cadastro de projetos | enhancement |
-| 5 | Implementar leitura de configuração | enhancement |
-| 6 | Criar menu inicial | enhancement |
-| 7 | Detectar unidade de projetos automaticamente | enhancement |
-| 8 | Exibir projeto selecionado | enhancement |
-| 9 | Preparar módulo Git | enhancement |
-| 10 | Preparar módulo VS Code | enhancement |
-| 11 | Preparar módulo de voz | enhancement |
-| 12 | Criar documentação da Fase 1 | documentation |
-| 13 | Criar documentação da arquitetura | documentation |
-| 14 | Criar primeiro teste automatizado | testing |
-| 15 | Criar commit inicial organizado | chore |
+| 1 | Criar interface gráfica com Flet - Tela Início | enhancement |
+| 2 | Criar interface gráfica com Flet - Tela Projetos | enhancement |
+| 3 | Criar interface gráfica com Flet - Tela Atividades | enhancement |
+| 4 | Criar interface gráfica com Flet - Tela Configurações | enhancement |
+| 5 | Implementar CRUD completo no ProjetosManager | enhancement |
+| 6 | Criar camada de Services para isolamento da interface | enhancement |
+| 7 | Estender Histórico com função de listagem | enhancement |
 
-## Primeiro commit
+## Commits
 
 ```
-204d9e4 feat: estrutura inicial do BotVSCode — Fase 1
+470018d Fase 2: Interface gráfica Flet + CRUD projetos + serviços
+ef7385e Adicionado seletor de pasta no campo Pasta Local
+4b3930e Corrigido FilePicker - adicionado ao overlay na inicialização
+15e0ccf Removido FilePicker - não suportado nesta versão do Flet
 ```
 
-Enviado para `origin/main` em 07/07/2026.
+## Projeto Original
+
+O repositório original `jlsandradebelpa/botvscode` permanece congelado como baseline de referência.

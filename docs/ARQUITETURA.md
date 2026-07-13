@@ -1,157 +1,199 @@
-# Arquitetura do BotVSCode
+# Arquitetura do BotVSCode2
 
 ## Visão Geral
 
-O BotVSCode segue uma arquitetura modular baseada em camadas, onde cada módulo tem responsabilidade bem definida. O fluxo principal é orquestrado pelo `main.py`, que coordena a interação entre os demais módulos.
+O BotVSCode2 segue uma arquitetura em **três camadas**:
+
+```
+┌─────────────────────────────────┐
+│       UI (Flet)                 │  ← Apresentação
+│  páginas/inicio.py              │
+│  páginas/projetos.py            │
+│  páginas/atividades.py          │
+│  páginas/configuracoes.py       │
+├─────────────────────────────────┤
+│     Services                    │  ← Integração
+│  project_service.py             │
+│  git_service.py                 │
+│  github_service.py              │
+│  historico_service.py           │
+│  vscode_service.py              │
+├─────────────────────────────────┤
+│     Core (Regras de Negócio)    │  ← Domínio
+│  projetos.py (ProjetosManager)  │
+│  git_tools.py (GitTools)        │
+│  github_tools.py                │
+│  historico.py                   │
+│  vscode.py                      │
+│  config.py / utils.py           │
+└─────────────────────────────────┘
+```
+
+**Regra fundamental**: A camada UI **nunca** acessa diretamente as classes Core. Toda comunicação passa pelos Services.
 
 ## Diagrama de Módulos
 
 ```
 app/
-├── main.py          # Orquestrador principal (loop do menu)
-├── config.py        # Leitura e representação da configuração
-├── menu.py          # Interface de menu com dois modos de operação
-├── projetos.py      # Gerenciamento de projetos cadastrados
-├── git_tools.py     # Operações Git (fetch, pull, commit, push, status)
-├── github_tools.py  # Consulta de GitHub Issues (API REST)
-├── historico.py     # Registro de histórico diário de atividades
-├── vscode.py        # Abertura automática do VS Code
-├── speech.py        # Síntese de voz (fase futura)
-└── utils.py         # Utilitários gerais
+├── main.py              # Entry point Flet
+├── config.py            # Leitura da configuração (Config dataclass)
+├── projetos.py          # ProjetosManager + Projeto dataclass (CRUD)
+├── menu.py              # Menu terminal (legado — mantido como referência)
+├── git_tools.py         # Operações Git (GitTools)
+├── github_tools.py      # Consulta GitHub Issues
+├── historico.py         # Histórico de atividades (+ listar)
+├── vscode.py            # Controle VS Code (+ close_vscode)
+├── utils.py             # Utilitários (saudacao, resolve_full_path)
+├── services/            # Camada de serviços
+│   ├── project_service.py
+│   ├── git_service.py
+│   ├── github_service.py
+│   ├── historico_service.py
+│   └── vscode_service.py
+└── ui/                  # Interface gráfica Flet
+    ├── app.py           # Orquestrador principal (BotVSCode2App)
+    ├── tema.py          # Tema escuro
+    ├── helpers.py       # Utilitários de UI
+    ├── componentes/
+    └── paginas/
+        ├── inicio.py
+        ├── projetos.py
+        ├── atividades.py
+        └── configuracoes.py
 ```
 
 ## Responsabilidades
 
-### config.py
-- Dataclass `Config` com os campos: `workspace_drive`, `usuario`, `empresa`.
-- Método de classe `load()` que lê o JSON em `config/config.json` e retorna uma instância tipada.
+### Core (Regras de Negócio)
 
-### projetos.py
-- Dataclass `Projeto` com os campos: `nome`, `pasta`, `branch`, `linguagem`, `github_repo` (opcional).
-- Classe `ProjetosManager` que gerencia a lista de projetos carregada de `config/projetos.json`.
-- Fornece métodos para acesso indexado e contagem.
+#### projetos.py
+- Dataclass `Projeto`: `nome`, `pasta`, `branch`, `linguagem`, `github_repo`, `historico_pasta`
+- Classe `ProjetosManager`: CRUD completo (`save`, `adicionar`, `editar`, `remover`, `existe_nome`, `carregar`)
+- Persistência em `config/projetos.json` com `json.dump(indent=2, ensure_ascii=False)`
 
-### github_tools.py
-- Função `list_open_issues(repo)`: consulta a API REST do GitHub e retorna issues abertas de um repositório.
-- Filtra pull requests (apenas issues reais).
-- Tratamento de erros para falha de conexão.
+#### git_tools.py
+- Classe `GitTools`: encapsula comandos Git via `subprocess`
+- Métodos: `is_git_repo()`, `fetch()`, `pull()`, `push()`, `commit()`, `stage_all()`, `status_short()`, `has_uncommitted_changes()`, `get_current_branch()`, `get_branch_status()`
 
-### historico.py
-- Função `registrar(tipo, descricao)`: adiciona entrada numerada no arquivo `historico_atividades_YYYY-MM-DD.txt`.
-- Cria o arquivo com cabeçalho se não existir.
+#### github_tools.py
+- `list_open_issues(repo)`: consulta GitHub Issues via CLI `gh` ou API REST
 
-### menu.py
-- Classe `Menu` responsável por exibir a interface textual e orquestrar os fluxos.
-- Dois modos principais: **Iniciar Trabalho** (fetch → pull → VS Code → tarefas) e **Encerrar Trabalho** (status → commit → push).
-- Usa `utils.saudacao()` para personalizar a saudação conforme o horário.
-- Usa `utils.resolve_full_path()` para resolver o caminho completo do projeto.
-- Usa `GitTools` para operações Git.
-- Usa `list_open_issues()` para consultar GitHub Issues.
-- Usa `registrar()` para histórico de atividades.
-- Usa `open_vscode()` para abrir o VS Code.
+#### historico.py
+- `registrar(tipo, descricao, pasta)`: adiciona entrada no arquivo do dia
+- `listar(pasta)`: retorna lista de registros do dia
+- `listar_arquivos(pasta)`: lista arquivos de histórico disponíveis
 
-### git_tools.py
-- Classe `GitTools` que encapsula operações Git via `subprocess`.
-- Métodos: `is_git_repo()`, `fetch()`, `pull()`, `push()`, `commit()`, `status_short()`, `status_full()`, `has_uncommitted_changes()`, `get_current_branch()`, `get_branch_status()` (ahead/behind).
-- Tratamento de erros para Git não instalado.
+#### vscode.py
+- `open_vscode(project_path)`: abre VS Code no diretório
+- `close_vscode(project_path)`: fecha VS Code via taskkill
+- `is_vscode_installed()`: verifica se `code` está no PATH
 
-### vscode.py
-- Função `open_vscode(project_path)`: abre o VS Code no diretório do projeto.
-- Função `is_vscode_installed()`: verifica se o comando `code` está disponível no PATH.
+### Services (Camada de Integração)
 
-### utils.py
-- `detect_workspace_drive()`: varre as unidades D: e E: para encontrar a pasta do projeto.
-- `resolve_full_path()`: se o caminho for absoluto, retorna-o diretamente; caso contrário, combina a unidade (detectada ou fixa) com o caminho relativo.
-- `saudacao()`: retorna "Bom dia!", "Boa tarde!" ou "Boa noite!" conforme o horário.
+Cada Service é um **wrapper fino** que:
+- Expõe API simplificada para a UI
+- Traduz exceções em tuplas `(bool, mensagem)`
+- Não contém regras de negócio
 
-### Módulos futuros (stubs)
-- `speech.py`: síntese de voz para notificações — Fase 5.
+| Service | Classe Core | Função |
+|---------|-------------|--------|
+| `ProjectService` | `ProjetosManager` | CRUD com validação |
+| `GitService` | `GitTools` + `resolve_full_path` | Operações Git |
+| `GitHubService` | `list_open_issues` | Consulta Issues |
+| `HistoricoService` | `registrar` + `listar` | Histórico |
+| `VSCodeService` | `open_vscode` + `close_vscode` | Controle VS Code |
 
-## Fluxo Principal
+### UI (Apresentação)
 
-```mermaid
-flowchart TD
-    A[main.py inicia] --> B[Config.load]
-    B --> C[ProjetosManager.load]
-    C --> D[Menu Principal]
-    D --> E{Modo?}
-    E -->|1 - Iniciar| F[Selecionar Projeto]
-    E -->|2 - Encerrar| G[Selecionar Projeto]
-    E -->|0 - Sair| H[Fim]
-    F --> I[Fetch / Status / Pull / VS Code / Tarefas Pendentes]
-    G --> J[Status / Commit / Push]
-    I --> D
-    J --> D
+#### app.py (BotVSCode2App)
+- Orquestrador principal do Flet
+- Cria NavigationBar com 4 abas
+- Gerencia página ativa via `_mudar_aba()`
+- Barra de mensagens inferior
+
+#### páginas/inicio.py
+- Projeto atual (nome, pasta, branch)
+- Botões **Iniciar Atividade** e **Encerrar Atividade**
+- Status Git e VSCode
+- Última sincronização e última atividade
+
+#### páginas/projetos.py
+- Lista de projetos (carregada de `projetos.json`)
+- Formulário de cadastro/edição (Nome, Pasta, Branch, Linguagem, GitHub, Histórico)
+- Botões: Novo, Salvar, Remover
+
+#### páginas/atividades.py
+- Tabela com histórico do dia (somente leitura)
+
+#### páginas/configuracoes.py
+- Placeholder para Fase 3 (VSCode, Git, GitHub, Tema, Histórico)
+
+## Fluxo de Dados
+
+```
+Botão na UI
+    ↓
+Evento Flet → método na página
+    ↓
+Service (ex: GitService.pull)
+    ↓
+Classe Core (ex: GitTools.pull)
+    ↓
+Resultado → UI atualizada
 ```
 
-## Fluxo "Iniciar Trabalho"
+## Fluxo "Iniciar Atividade"
 
-```mermaid
-flowchart TD
-    A[Selecionar Projeto] --> B[Caminho existe?]
-    B -->|Sim| C[É repositório Git?]
-    B -->|Não| D[Erro: caminho não encontrado]
-    C -->|Sim| E[Git Fetch]
-    C -->|Não| D
-    E --> F[Comparar branch]
-    F --> G[Tem alterações locais?]
-    G -->|Sim| H[Mostrar arquivos]
-    G -->|Não| I[OK]
-    H --> I
-    I --> J[Remoto está à frente?]
-    J -->|Sim| K[Oferecer Pull]
-    J -->|Não| L[Já atualizado]
-    K --> M[Pull]
-    M --> N[Abrir VS Code?]
-    L --> N
-    N -->|Sim| O[Abrir VS Code]
-    O --> Q[Listar Tarefas Pendentes]
-    N -->|Não| Q
-    Q --> P[Fim]
+```
+1. Validar projeto selecionado
+2. Verificar se caminho existe
+3. Verificar se é repositório Git
+4. Executar Git Fetch
+5. Comparar branch local vs remota
+6. Se remoto à frente → Git Pull
+7. Abrir VS Code (se instalado)
+8. Registrar atividade no histórico
+9. Atualizar tela com status
 ```
 
-## Fluxo "Encerrar Trabalho"
+## Fluxo "Encerrar Atividade"
 
-```mermaid
-flowchart TD
-    A[Selecionar Projeto] --> B[Caminho existe?]
-    B -->|Sim| C[É repositório Git?]
-    B -->|Não| D[Erro]
-    C -->|Sim| E[Tem alterações?]
-    C -->|Não| D
-    E -->|Não| F[Push para sincronizar]
-    E -->|Sim| G[Mostrar arquivos]
-    G --> H[Confirma commit?]
-    H -->|Sim| I[Solicitar mensagem]
-    H -->|Não| J[Cancelado]
-    I --> K[Commit]
-    K --> L[Push]
-    L --> M[OK: sincronizado]
+```
+1. Validar projeto selecionado
+2. Verificar alterações locais
+3. Se sem alterações → Push direto
+4. Se com alterações:
+   a. Perguntar se deseja commitar
+   b. Solicitar mensagem do commit
+   c. Stage All → Commit → Push
+5. Fechar VS Code (se configurado)
+6. Registrar atividade no histórico
+7. Atualizar tela com status
 ```
 
 ## Decisões de Arquitetura
 
-1. **Config e Projetos em JSON**: arquivos de configuração simples, sem banco de dados, para facilitar edição manual e versionamento.
-2. **Dataclasses para modelos**: representação tipada e imutável dos dados, facilitando manutenção e testes.
-3. **sys.path ajustado em main.py**: permite execução direta com `python app/main.py` sem necessidade de instalação do pacote.
-4. **Git via subprocess**: sem dependências de bibliotecas Git externas, usando o próprio Git instalado no sistema.
-5. **Detecção automática de unidade**: suporte a ambientes onde o workspace pode estar em D: ou E: sem configuração manual.
-6. **Suporte a caminhos absolutos**: `resolve_full_path()` detecta automaticamente caminhos absolutos, permitindo projetos localizados em qualquer unidade sem tratamento especial.
+1. **Flet como framework UI**: moderno, Python puro, dark theme nativo, componentes responsivos
+2. **Services como ponte**: UI nunca acessa Core diretamente — isolamento total de responsabilidades
+3. **ProjetosManager com CRUD**: métodos `save/adicionar/editar/remover/existe_nome` com persistência imediata
+4. **Config e Projetos em JSON**: compatibilidade total com BotVSCode original
+5. **Dataclasses para modelos**: tipagem e sem boilerplate
+6. **Git via subprocess**: sem dependências externas de bibliotecas Git
+7. **menu.py mantido**: referência técnica do fluxo original, não utilizado pela UI
 
 ## Padrões Utilizados
 
-- **Método Factory**: `Config.load()` como factory method.
-- **Composição**: `Menu` recebe dependências por composição (workspace_drive, ProjetosManager).
-- **Dataclass**: modelos de dados com tipagem e sem boilerplate.
-- **Façade**: `GitTools` como fachada para comandos Git.
+- **Camadas (Layered Architecture)**: UI → Services → Core
+- **Método Factory**: `Config.load()`, `ProjetosManager.carregar()`
+- **Façade**: Services como fachada para classes Core
+- **Composição**: páginas recebem Services por injeção de dependência
+- **Dataclass**: modelos de dados tipados
 
 ## Extensibilidade
 
-Para adicionar uma nova funcionalidade:
+Para adicionar uma nova funcionalidade na Fase 3:
 
-1. Implementar o módulo correspondente.
-2. Injetar a dependência em `Menu` ou em `main.py`.
-3. Adicionar a opção no menu.
-4. Chamar o método apropriado.
-
-O baixo acoplamento entre módulos permite que cada fase seja implementada de forma incremental.
+1. Implementar/estender a classe Core (regra de negócio)
+2. Criar/estender o Service correspondente
+3. Criar a página Flet ou adicionar o componente
+4. Conectar no `app.py`

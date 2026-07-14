@@ -19,6 +19,7 @@ from ui.paginas.inicio import InicioPage
 from ui.paginas.preferencias import PreferenciasPage
 from ui.paginas.projetos import ProjetosPage
 from ui.tema import aplicar_tema
+from chat.chat_service import ChatService
 
 
 class BotVSCode2App:
@@ -41,6 +42,14 @@ class BotVSCode2App:
             hist_pasta = Path(config.historico_pasta)
         self._historico_service = HistoricoService(hist_pasta)
         self._preferences_service = preferences_service
+
+        self._chat_service = ChatService(
+            self._project_service,
+            self._git_service,
+            self._github_service,
+            self._historico_service,
+            self._vscode_service,
+        )
 
         self._inicio_page = InicioPage(
             self._git_service,
@@ -100,6 +109,209 @@ class BotVSCode2App:
 
     def _encerrar_atividade(self, e: ft.ControlEvent) -> None:
         self._inicio_page.encerrar_atividade(e)
+
+    # --- Chat ---
+
+    def _toggle_chat(self, e: ft.ControlEvent) -> None:
+        self._chat_panel.visible = not self._chat_panel.visible
+        self._page.update()
+
+    def _add_chat_message(self, text: str, is_user: bool = False) -> None:
+        bg = (
+            ft.Colors.PRIMARY_CONTAINER
+            if is_user
+            else ft.Colors.SURFACE_CONTAINER_HIGHEST
+        )
+        self._chat_messages.controls.append(
+            ft.Container(
+                content=ft.Text(text, size=13, selectable=True),
+                padding=ft.Padding(left=12, top=8, right=12, bottom=8),
+                bgcolor=bg,
+                border_radius=12,
+            )
+        )
+        try:
+            self._chat_messages.update()
+        except RuntimeError:
+            pass
+
+    def _on_chat_submit(self, e: ft.ControlEvent) -> None:
+        text = (self._chat_input.value or "").strip()
+        if not text:
+            return
+
+        suggestions = self._chat_service.get_suggestions(text)
+
+        if len(suggestions) == 1:
+            text = suggestions[0]
+        elif len(suggestions) > 1:
+            self._chat_input.value = ""
+            self._chat_input.update()
+            self._add_chat_message(f"> {text}", is_user=True)
+            self._add_chat_message(
+                "Mais de um comando corresponde. "
+                "Clique na sugestão ou digite mais caracteres."
+            )
+            return
+
+        self._chat_input.value = ""
+        self._suggestions_container.visible = False
+        self._chat_input.update()
+
+        if text:
+            self._add_chat_message(f"> {text}", is_user=True)
+            response = self._chat_service.process_input(text)
+            if response:
+                self._add_chat_message(response)
+
+    def _on_chat_input_change(self, e: ft.ControlEvent) -> None:
+        text = (self._chat_input.value or "").strip()
+        suggestions = self._chat_service.get_suggestions(text)
+
+        if suggestions:
+            self._suggestions_container.visible = True
+            self._suggestions_list.controls.clear()
+
+            label = "Comandos disponíveis" if text.strip() == "/" else "Sugestões"
+            self._suggestions_list.controls.append(
+                ft.Text(label, size=11, color=ft.Colors.GREY_400, weight=ft.FontWeight.BOLD)
+            )
+
+            for cmd in suggestions:
+                btn = ft.TextButton(
+                    content=ft.Text(cmd, size=13),
+                    on_click=lambda _, c=cmd: self._select_suggestion(c),
+                    style=ft.ButtonStyle(
+                        padding=ft.Padding(left=12, top=4, right=12, bottom=4),
+                    ),
+                )
+                self._suggestions_list.controls.append(btn)
+        else:
+            self._suggestions_container.visible = False
+
+        self._suggestions_container.update()
+
+    def _select_suggestion(self, command: str) -> None:
+        self._chat_input.value = ""
+        self._suggestions_container.visible = False
+        self._suggestions_container.update()
+        self._add_chat_message(f"> {command}", is_user=True)
+        response = self._chat_service.process_input(command)
+        if response:
+            self._add_chat_message(response)
+
+    def _build_chat_ui(self) -> None:
+        self._chat_messages = ft.Column(
+            spacing=8, scroll=ft.ScrollMode.AUTO, expand=True,
+        )
+
+        self._chat_input = ft.TextField(
+            hint_text='Digite "/" para comandos...',
+            prefix=ft.Text("> ", weight=ft.FontWeight.BOLD),
+            on_submit=self._on_chat_submit,
+            on_change=self._on_chat_input_change,
+            border=ft.InputBorder.NONE,
+            content_padding=ft.Padding(left=8, top=8, right=8, bottom=8),
+            text_size=14,
+            expand=True,
+        )
+
+        self._suggestions_list = ft.Column(spacing=2, scroll=ft.ScrollMode.AUTO)
+        self._suggestions_container = ft.Container(
+            content=self._suggestions_list,
+            visible=False,
+            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+            border_radius=8,
+            padding=ft.Padding(left=4, top=4, right=4, bottom=4),
+            height=220,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=8,
+                color=ft.Colors.with_opacity(0.2, ft.Colors.BLACK),
+            ),
+        )
+
+        avatar_panel = (
+            ft.Image(
+                src=str(Path(__file__).resolve().parent.parent.parent / "assets" / "avatar_bot.png"),
+                width=32, height=32, fit=ft.ImageFit.CONTAIN,
+            )
+            if (Path(__file__).resolve().parent.parent.parent / "assets" / "avatar_bot.png").exists()
+            else ft.Icon(ft.Icons.SMART_TOY, size=28, color=ft.Colors.PRIMARY)
+        )
+
+        header = ft.Container(
+            content=ft.Row(
+                [avatar_panel, ft.Text("Chat BotVSCode2", size=16, weight=ft.FontWeight.BOLD)],
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=8,
+            ),
+            padding=ft.Padding(left=16, top=12, right=16, bottom=12),
+            bgcolor=ft.Colors.PRIMARY_CONTAINER,
+            border_radius=16,
+        )
+
+        panel_body = ft.Column([
+            ft.Container(content=self._chat_messages, padding=16, expand=True),
+            self._suggestions_container,
+            ft.Container(
+                content=ft.Row([self._chat_input], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                padding=ft.Padding(left=8, top=4, right=8, bottom=8),
+                bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+            ),
+        ], spacing=0, expand=True)
+
+        self._chat_panel = ft.Container(
+            content=ft.Column([header, ft.Divider(height=0), panel_body], spacing=0),
+            visible=False,
+            width=380,
+            height=520,
+            border_radius=16,
+            bgcolor=ft.Colors.SURFACE_CONTAINER,
+            shadow=ft.BoxShadow(
+                spread_radius=2,
+                blur_radius=16,
+                color=ft.Colors.with_opacity(0.3, ft.Colors.BLACK),
+            ),
+            right=20,
+            bottom=80,
+            animate=ft.Animation(300, ft.AnimationCurve.EASE_OUT),
+        )
+
+        avatar_btn = (
+            ft.Image(
+                src=str(Path(__file__).resolve().parent.parent.parent / "assets" / "avatar_bot.png"),
+                width=48, height=48, fit=ft.ImageFit.CONTAIN, border_radius=24,
+            )
+            if (Path(__file__).resolve().parent.parent.parent / "assets" / "avatar_bot.png").exists()
+            else ft.Container(
+                content=ft.Row(
+                    [ft.Icon(ft.Icons.SMART_TOY, size=28, color=ft.Colors.WHITE)],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+                width=48, height=48,
+                bgcolor=ft.Colors.PRIMARY,
+                border_radius=24,
+            )
+        )
+
+        self._chat_button = ft.Container(
+            content=avatar_btn,
+            right=20,
+            bottom=20,
+            width=56,
+            height=56,
+            border_radius=28,
+            bgcolor=ft.Colors.PRIMARY_CONTAINER,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=8,
+                color=ft.Colors.with_opacity(0.3, ft.Colors.BLACK),
+            ),
+            on_click=self._toggle_chat,
+            animate=ft.Animation(200, ft.AnimationCurve.EASE_OUT),
+            ink=True,
+        )
 
     def run(self, page: ft.Page) -> None:
         self._page = page
@@ -172,12 +384,26 @@ class BotVSCode2App:
             border=ft.Border(top=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT)),
         )
 
-        page.add(
-            ft.Column([
-                titulo,
-                barra_principal,
-                self._content,
-                mensagem_bar,
-            ], spacing=0, expand=True)
+        main_column = ft.Column([
+            titulo,
+            barra_principal,
+            self._content,
+            mensagem_bar,
+        ], spacing=0, expand=True)
+
+        self._build_chat_ui()
+
+        self._chat_service.definir_on_projeto_selecionado(self._on_projeto_selecionado)
+
+        stack = ft.Stack(
+            controls=[main_column, self._chat_panel, self._chat_button],
+            expand=True,
+        )
+
+        page.add(stack)
+        self._add_chat_message(
+            "Chat integrado ativo.\n\n"
+            "Digite / para ver os comandos disponíveis "
+            "ou /ajuda para obter ajuda."
         )
         page.update()

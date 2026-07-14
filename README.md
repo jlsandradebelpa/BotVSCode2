@@ -8,7 +8,7 @@ O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** uti
 
 ## Funcionalidades
 
-### Fase 3 — UX, Preferências e Fluxos (atual)
+### Fase 3 — UX, Preferências e Fluxos (concluída)
 - Interface Flet iniciada maximizada
 - Ações **Iniciar/Encerrar Atividade** integradas à barra principal
 - Tela **Início**: projeto atual e status em layout expansível
@@ -19,6 +19,15 @@ O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** uti
 - Fluxos Git de início e encerramento com validação e mensagens de falha
 - Serviços desacoplados (camada Service entre UI e regras de negócio)
 - Backward compatible com `config/projetos.json` do BotVSCode original
+
+### Fase 5 — Chat Integrado (concluída)
+- Botão flutuante do chat no canto inferior direito com avatar
+- Painel deslizante que abre/fecha sem abrir nova janela
+- Campo de digitação com prefixo `>`
+- Sistema de comandos via `/` com autocomplete
+- 6 comandos registrados sem cadeia de IFs (CommandRegistry)
+- Contexto de sessão mantido em memória
+- Arquitetura em módulo `app/chat/` seguindo padrão de camadas
 
 ### Legado (Fase 1 — Núcleo)
 - Leitura de configuração (`config.json`)
@@ -53,6 +62,17 @@ python app/main.py
 
 Ou clique no atalho **BotVSCode2** na Área de Trabalho.
 
+## Fluxo Git operacional
+
+O desenvolvimento do BotVSCode2 ocorre em `devjlsa`. A branch `main`
+representa a versão estável e recebe alterações somente por Pull Request após
+validação. A tela Início exibe a branch cadastrada para o projeto selecionado;
+por isso, `config/projetos.json` deve permanecer alinhado ao repositório local.
+
+Nesta estação, ImpProtheusSOC, CBAA Asfaltos, BotVSCode e BotVSCode2 usam
+`devjlsa`. `candidato_cbaa` permanece cadastrado apenas como referência e não
+deve receber operações automatizadas enquanto não houver clone local validado.
+
 ## Estrutura do Projeto
 
 ```
@@ -68,6 +88,12 @@ botvscode2/
 │   ├── historico.py          # Histórico de atividades
 │   ├── vscode.py             # Controle do VS Code
 │   ├── utils.py              # Utilitários
+│   ├── chat/                 # Chat integrado (Sprint 03)
+│   │   ├── chat_service.py
+│   │   ├── command_context.py
+│   │   ├── command_executor.py
+│   │   ├── command_parser.py
+│   │   └── command_registry.py
 │   ├── services/             # Camada de serviços
 │   │   ├── project_service.py
 │   │   ├── git_service.py
@@ -86,6 +112,7 @@ botvscode2/
 │           ├── atividades.py
 │           ├── configuracoes.py
 │           └── preferencias.py
+├── assets/                   # Recursos visuais (avatar, etc.)
 ├── config/                   # Configurações JSON
 ├── docs/                     # Documentação
 ├── logs/                     # Logs
@@ -100,6 +127,7 @@ botvscode2/
 - [Fluxo de branches e promoção](docs/FLUXO_BRANCHES.md)
 - [Fase 2 — Interface Gráfica](docs/FASE_02.md)
 - [Fase 3 — UX, Preferências e Fluxos](docs/FASE_03_UX_FLUXOS.md)
+- [Sprint 03 — Chat Integrado](docs/FASE_05_CHAT_INTEGRADO.md)
 
 ## Licença
 

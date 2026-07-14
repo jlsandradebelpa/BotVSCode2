@@ -32,16 +32,31 @@
 
 Detalhamento: [FASE_03_UX_FLUXOS.md](FASE_03_UX_FLUXOS.md)
 
-## Fase 4 — Assistente IA *(Prevista)*
+## Fase 5 — Chat Integrado *(Concluída)*
+
+- [x] Módulo `app/chat/` com arquitetura em camadas
+- [x] Botão flutuante do chat com avatar
+- [x] Painel deslizante (abrir/fechar sem nova janela)
+- [x] Campo de digitação com prefixo `>`
+- [x] Sistema de comandos via `/` com autocomplete
+- [x] CommandRegistry (sem cadeia de IFs)
+- [x] 6 comandos registrados
+- [x] Contexto de sessão (projeto atual em memória)
+
+Detalhamento: [FASE_05_CHAT_INTEGRADO.md](FASE_05_CHAT_INTEGRADO.md)
+
+## Fase 6 — Assistente IA *(Prevista)*
 
 - [ ] Integração com IA (OpenAI, Gemini, Claude)
-- [ ] Chatbot embutido na interface
-- [ ] Automação RPO Protheus
+- [ ] Linguagem natural no chat
+- [ ] Histórico da conversa
+- [ ] Memória do projeto
+- [ ] Automação RPO Protheus (consulta)
 - [ ] MCP Server
 - [ ] LangChain / RAG
 - [ ] Sugestão inteligente de projetos
 
-## Fase 5 — Distribuição *(Prevista)*
+## Fase 7 — Distribuição *(Prevista)*
 
 - [ ] Instalador do sistema
 - [ ] Empacotamento (PyInstaller)

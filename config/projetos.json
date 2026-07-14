@@ -2,14 +2,14 @@
   {
     "nome": "ImpProtheusSOC",
     "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/intprotheussoc",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "ADVPL",
     "github_repo": "jlsandradebelpa/intprotheussoc"
   },
   {
     "nome": "CBAA_Asfaltos_Empresa",
     "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/cbaa_asfaltos_empresa",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "ADVPL",
     "github_repo": "jlsandradebelpa/CBAA_Asfaltos_Empresa"
   },

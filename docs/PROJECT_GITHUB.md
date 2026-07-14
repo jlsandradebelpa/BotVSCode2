@@ -16,6 +16,8 @@
 - Push direto, force-push e exclusão da `main` são bloqueados no GitHub.
 - O BotVSCode e o BotVSCode2 registram este projeto com a branch operacional
   `devjlsa`.
+- As configurações operacionais também usam `devjlsa` para BotVSCode,
+  ImpProtheusSOC e CBAA Asfaltos.
 
 Detalhes: [Fluxo de branches e promoção](FLUXO_BRANCHES.md).
 
@@ -72,4 +74,6 @@ ef7385e Adicionado seletor de pasta no campo Pasta Local
 
 ## Projeto Original
 
-O repositório original `jlsandradebelpa/botvscode` permanece congelado como baseline de referência.
+O repositório original `jlsandradebelpa/botvscode` permanece como aplicação de
+terminal e também adota `devjlsa` para desenvolvimento. Ele não deve ser tratado
+como congelado.

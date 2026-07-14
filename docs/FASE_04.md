@@ -2,6 +2,10 @@
 
 *Status: Concluída*
 
+> Exemplos de cadastro neste documento são ilustrativos. Operações Git devem
+> usar a branch configurada para cada projeto; para os projetos ativos CBAA e os
+> bots, a branch operacional vigente é `devjlsa`.
+
 ## Objetivo
 
 Adicionar ao BotVSCode a capacidade de listar as tarefas pendentes relacionadas ao projeto selecionado após a abertura do VS Code.

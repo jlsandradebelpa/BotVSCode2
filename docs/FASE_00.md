@@ -2,6 +2,9 @@
 
 *Status: Concluída*
 
+> Documento histórico da implantação inicial. Referências a `main` descrevem
+> o estado daquela fase; o desenvolvimento atual ocorre em `devjlsa`.
+
 ## Objetivo
 
 Criar toda a infraestrutura necessária para o desenvolvimento do projeto: repositório, GitHub Project, issues iniciais, estrutura de diretórios e documentação base.

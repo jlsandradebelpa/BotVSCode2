@@ -68,8 +68,11 @@ echo "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"list_tools\"}" | python mcp_ser
 
 Configurados em `mcp_server/projetos.json`. Atualmente:
 
-- `intprotheussoc` (3 caminhos possíveis)
-- `cbaa_asfaltos_empresa`
-- `botvscode`
+- `intprotheussoc` (`devjlsa`)
+- `cbaa_asfaltos_empresa` (`devjlsa`)
+- `botvscode` (`devjlsa`)
 - `botvscode2` (`devjlsa`)
 - `OpenCodeSessionExplorer`
+
+O projeto `candidato_cbaa` não deve receber operações automatizadas nesta
+estação enquanto o clone local não estiver disponível e validado.

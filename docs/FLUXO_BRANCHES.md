@@ -20,18 +20,18 @@ Separar o trabalho diário da versão oficial do BotVSCode2.
 5. Mesclar em `main` somente quando a atualização puder entrar em produção.
 6. Não executar push direto, force-push ou exclusão da branch `main`.
 
-## Configuração dos bots
+## Configuração operacional dos bots
 
-O BotVSCode e o BotVSCode2 devem cadastrar o projeto `BotVsCode2` com:
+| Projeto | Branch operacional |
+|---|---|
+| `ImpProtheusSOC` | `devjlsa` |
+| `CBAA_Asfaltos_Empresa` | `devjlsa` |
+| `BotVSCode` | `devjlsa` |
+| `BotVsCode2` | `devjlsa` |
 
-```json
-{
-  "nome": "BotVsCode2",
-  "pasta": "C:\\projetos\\BotVsCode2",
-  "branch": "devjlsa",
-  "github_repo": "jlsandradebelpa/BotVSCode2"
-}
-```
+Os arquivos `config/projetos.json` e `mcp_server/projetos.json` devem refletir
+essa matriz. A tela Início apresenta a branch configurada no cadastro, enquanto
+as operações Git devem validar também a branch real do repositório.
 
-Os módulos MCP usam a propriedade `branch_padrao` com o valor `devjlsa`. A
-branch `main` não deve ser usada pelos fluxos automáticos de commit e push.
+`candidato_cbaa` permanece fora deste fluxo enquanto não houver clone local
+validado nesta estação.

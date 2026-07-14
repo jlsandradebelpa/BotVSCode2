@@ -20,7 +20,19 @@
 - [x] Nenhuma regra de negócio alterada
 - [x] BotVSCode original intacto
 
-## Fase 3 — Assistente IA *(Prevista)*
+## Fase 3 — UX, Preferências e Fluxos *(Concluída)*
+
+- [x] Abrir a aplicação maximizada
+- [x] Integrar Iniciar/Encerrar Atividade à barra principal
+- [x] Remover a saudação e reaproveitar o espaço da tela Início
+- [x] Adicionar rolagem vertical à lista de projetos
+- [x] Adicionar seleção explícita de projeto durante a sessão
+- [x] Criar aba Preferências com tema, cor e fonte
+- [x] Tornar funcionais e verificáveis os fluxos Iniciar/Encerrar Atividade
+
+Detalhamento: [FASE_03_UX_FLUXOS.md](FASE_03_UX_FLUXOS.md)
+
+## Fase 4 — Assistente IA *(Prevista)*
 
 - [ ] Integração com IA (OpenAI, Gemini, Claude)
 - [ ] Chatbot embutido na interface
@@ -29,7 +41,7 @@
 - [ ] LangChain / RAG
 - [ ] Sugestão inteligente de projetos
 
-## Fase 4 — Distribuição *(Prevista)*
+## Fase 5 — Distribuição *(Prevista)*
 
 - [ ] Instalador do sistema
 - [ ] Empacotamento (PyInstaller)

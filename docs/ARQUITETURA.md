@@ -11,12 +11,14 @@ O BotVSCode2 segue uma arquitetura em **três camadas**:
 │  páginas/projetos.py            │
 │  páginas/atividades.py          │
 │  páginas/configuracoes.py       │
+│  páginas/preferencias.py        │
 ├─────────────────────────────────┤
 │     Services                    │  ← Integração
 │  project_service.py             │
 │  git_service.py                 │
 │  github_service.py              │
 │  historico_service.py           │
+│  preferences_service.py         │
 │  vscode_service.py              │
 ├─────────────────────────────────┤
 │     Core (Regras de Negócio)    │  ← Domínio
@@ -37,6 +39,7 @@ O BotVSCode2 segue uma arquitetura em **três camadas**:
 app/
 ├── main.py              # Entry point Flet
 ├── config.py            # Leitura da configuração (Config dataclass)
+├── preferences.py       # Persistência das preferências visuais
 ├── projetos.py          # ProjetosManager + Projeto dataclass (CRUD)
 ├── menu.py              # Menu terminal (legado — mantido como referência)
 ├── git_tools.py         # Operações Git (GitTools)
@@ -49,6 +52,7 @@ app/
 │   ├── git_service.py
 │   ├── github_service.py
 │   ├── historico_service.py
+│   ├── preferences_service.py
 │   └── vscode_service.py
 └── ui/                  # Interface gráfica Flet
     ├── app.py           # Orquestrador principal (BotVSCode2App)
@@ -59,7 +63,8 @@ app/
         ├── inicio.py
         ├── projetos.py
         ├── atividades.py
-        └── configuracoes.py
+        ├── configuracoes.py
+        └── preferencias.py
 ```
 
 ## Responsabilidades
@@ -101,13 +106,16 @@ Cada Service é um **wrapper fino** que:
 | `GitService` | `GitTools` + `resolve_full_path` | Operações Git |
 | `GitHubService` | `list_open_issues` | Consulta Issues |
 | `HistoricoService` | `registrar` + `listar` | Histórico |
+| `PreferencesService` | `Preferences` | Tema, cor e fonte persistentes |
 | `VSCodeService` | `open_vscode` + `close_vscode` | Controle VS Code |
 
 ### UI (Apresentação)
 
 #### app.py (BotVSCode2App)
 - Orquestrador principal do Flet
-- Cria NavigationBar com 4 abas
+- Cria NavigationBar com 5 abas
+- Mantém Iniciar/Encerrar Atividade na barra principal
+- Inicia a janela maximizada
 - Gerencia página ativa via `_mudar_aba()`
 - Barra de mensagens inferior
 
@@ -126,7 +134,12 @@ Cada Service é um **wrapper fino** que:
 - Tabela com histórico do dia (somente leitura)
 
 #### páginas/configuracoes.py
-- Placeholder para Fase 3 (VSCode, Git, GitHub, Tema, Histórico)
+- Informações técnicas de VS Code, Git, GitHub e histórico
+
+#### páginas/preferencias.py
+- Tema claro, escuro ou conforme o sistema
+- Cor de destaque e fonte
+- Persistência em `config/preferences.json`
 
 ## Fluxo de Dados
 

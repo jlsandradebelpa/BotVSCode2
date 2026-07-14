@@ -54,7 +54,7 @@ class ConfiguracoesPage:
                 content=ft.Column([
                     ft.Text("Aparência", size=16, weight=ft.FontWeight.BOLD),
                     ft.Divider(height=1, color=ft.Colors.GREY_700),
-                    ft.Text("Tema escuro ativo.", size=13, color=ft.Colors.GREEN),
+                    ft.Text("Preferências visuais disponíveis na aba Preferências.", size=13, color=ft.Colors.PRIMARY),
                 ]),
                 padding=ft.Padding(left=16, top=16, right=16, bottom=16),
                 border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),

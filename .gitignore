@@ -17,6 +17,7 @@ venv/
 # Sistema
 *.log
 *.pid
+historico_atividades_*.txt
 
 # OS
 Thumbs.db

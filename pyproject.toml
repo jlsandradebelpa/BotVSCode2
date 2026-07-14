@@ -12,6 +12,9 @@ license = { text = "MIT" }
 authors = [
     { name = "Jorge Andrade" }
 ]
+dependencies = [
+    "flet>=0.85.3,<0.86"
+]
 
 [project.urls]
 Repository = "https://github.com/jlsandradebelpa/botvscode2"

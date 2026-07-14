@@ -7,6 +7,18 @@
 - **Branch padrão**: `main`
 - **Labels**: `enhancement`, `documentation`, `testing`, `chore`
 
+## Política de branches
+
+- `main` é a branch oficial, protegida e representa a versão de produção.
+- `devjlsa` recebe commits e pushes durante desenvolvimento e testes.
+- A promoção para produção ocorre somente por Pull Request de `devjlsa` para
+  `main`.
+- Push direto, force-push e exclusão da `main` são bloqueados no GitHub.
+- O BotVSCode e o BotVSCode2 registram este projeto com a branch operacional
+  `devjlsa`.
+
+Detalhes: [Fluxo de branches e promoção](FLUXO_BRANCHES.md).
+
 ## GitHub Project
 
 - **Nome**: BotVSCode2

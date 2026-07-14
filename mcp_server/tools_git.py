@@ -16,10 +16,10 @@ _COMANDOS_PERMITIDOS = {
     "git status",
     "git branch --show-current",
     "git remote -v",
-    "git pull origin main",
+    "git pull",
     "git add .",
     "git commit -m",
-    "git push origin main",
+    "git push",
 }
 
 _COMANDOS_BLOQUEADOS = [

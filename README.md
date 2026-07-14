@@ -97,6 +97,7 @@ botvscode2/
 - [Roadmap](docs/ROADMAP.md)
 - [Arquitetura](docs/ARQUITETURA.md)
 - [Configuração do GitHub](docs/PROJECT_GITHUB.md)
+- [Fluxo de branches e promoção](docs/FLUXO_BRANCHES.md)
 - [Fase 2 — Interface Gráfica](docs/FASE_02.md)
 - [Fase 3 — UX, Preferências e Fluxos](docs/FASE_03_UX_FLUXOS.md)
 

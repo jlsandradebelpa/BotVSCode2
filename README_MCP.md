@@ -23,8 +23,8 @@ README_MCP.md      # Este arquivo
 | `listar_projetos` | Lista projetos configurados |
 | `status_git` | Verifica status Git (branch, alterações, remote) |
 | `preparar_commit_push` | `git add .` + `git commit -m` com validações |
-| `confirmar_push` | `git push origin main` (requer confirmação) |
-| `git_pull_projeto` | `git pull origin main` |
+| `confirmar_push` | `git push` no remote e branch configurados (requer confirmação) |
+| `git_pull_projeto` | `git pull` no remote e branch configurados |
 | `registrar_log_atividade` | Registra operação no log |
 
 ## Como usar
@@ -55,7 +55,7 @@ echo "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"list_tools\"}" | python mcp_ser
 3. Agente pergunta a mensagem do commit
 4. `preparar_commit_push(projeto="intprotheussoc", mensagem_commit="...")` → add + commit
 5. Agente pergunta se pode enviar ao remoto
-6. `confirmar_push(projeto="intprotheussoc")` → push origin main
+6. `confirmar_push(projeto="intprotheussoc")` → push para a branch configurada
 
 ## Segurança
 
@@ -71,4 +71,5 @@ Configurados em `mcp_server/projetos.json`. Atualmente:
 - `intprotheussoc` (3 caminhos possíveis)
 - `cbaa_asfaltos_empresa`
 - `botvscode`
+- `botvscode2` (`devjlsa`)
 - `OpenCodeSessionExplorer`

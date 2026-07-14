@@ -27,6 +27,14 @@
       "remote": "origin"
     },
     {
+      "nome": "botvscode2",
+      "caminhos_possiveis": [
+        "C:\\Projetos\\BotVsCode2"
+      ],
+      "branch_padrao": "devjlsa",
+      "remote": "origin"
+    },
+    {
       "nome": "OpenCodeSessionExplorer",
       "caminhos_possiveis": [
         "C:\\projetos\\OpenCodeSessionExplorer"

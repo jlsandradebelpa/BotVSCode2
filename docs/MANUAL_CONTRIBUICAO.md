@@ -34,6 +34,20 @@ python -m venv .venv
 python app/main.py
 ```
 
+### Criar atalho na Área de Trabalho
+
+1. Abra o Bloco de Notas e cole o conteúdo abaixo:
+   ```bat
+   @echo off
+   cd /d C:\projetos\BotVSCode2
+   .venv\Scripts\python app\main.py
+   ```
+2. Salve como `BotVSCode2.bat` na Área de Trabalho
+3. (Opcional) Clique com botão direito > `Enviar para > Área de Trabalho (criar atalho)` no arquivo `app/main.py` e ajuste o destino para:
+   ```
+   C:\projetos\BotVSCode2\.venv\Scripts\pythonw.exe C:\projetos\BotVSCode2\app\main.py
+   ```
+
 ---
 
 ## 3. Fluxo de trabalho diário
@@ -98,7 +112,35 @@ assets/                 # Recursos visuais
 
 ---
 
-## 6. Convenções
+## 6. Como pedir ajuda ao assistente AI (OpenCode)
+
+Você pode pedir ajuda diretamente no chat do OpenCode para:
+
+- **Criar ou alterar código** — descreva o que quer fazer
+- **Gerar documentação** — peça um `ProtheusDOC` ou manual
+- **Revisar seu código** — peça uma revisão antes do PR
+- **Corrigir bugs** — cole o erro ou descreva o comportamento inesperado
+- **Refatorar** — peça para extrair funções, simplificar lógica, melhorar performance
+- **Testes** — solicite geração de testes unitários
+- **Dúvidas técnicas** — pergunte sobre padrões, bibliotecas, boas práticas
+
+### Exemplos de comandos
+
+> "Crie uma nova funcionalidade de exportar relatório em PDF"
+>
+> "Revise meu código em app/services/git_service.py"
+>
+> "Adicione documentação na função X"
+>
+> "Me ajude a corrigir esse erro: [cole o erro]"
+
+### Lembrete importante
+
+Toda alteração gerada pelo assistente precisa ser **revisada e testada** antes do commit. Você é o responsável pelo que entra no repositório.
+
+---
+
+## 7. Convenções
 
 - **Idioma**: Código em português (mensagens de commit em português também)
 - **Branches**: `main` (estável) ← `devjlsa` (desenvolvimento ativo) ← `jean-rocha/develop` (suas contribuições)
@@ -107,7 +149,7 @@ assets/                 # Recursos visuais
 
 ---
 
-## 7. Problemas comuns
+## 8. Problemas comuns
 
 | Problema | Solução |
 |----------|---------|
@@ -118,7 +160,7 @@ assets/                 # Recursos visuais
 
 ---
 
-## 8. Referências
+## 9. Referências
 
 - [Fluxo de branches](FLUXO_BRANCHES.md)
 - [Arquitetura do projeto](ARQUITETURA.md)

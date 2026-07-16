@@ -2,6 +2,15 @@
 
 > Assistente para preparação automática do ambiente de desenvolvimento — Interface Gráfica.
 
+## Governança para agentes de IA
+
+Antes de analisar ou alterar o projeto, leia obrigatoriamente:
+
+- [AGENTS.md](AGENTS.md) — regras de trabalho, issues e GitHub Project;
+- [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) — contexto mínimo e estável do projeto.
+
+Toda alteração relevante deve possuir uma issue vinculada no Project 9 antes da implementação.
+
 ## Descrição
 
 O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** utilizando **Flet**. Automatiza a preparação do ambiente de desenvolvimento: abrir VS Code, git pull/push/commit, registro de atividades e gerenciamento de projetos — tudo por uma interface visual intuitiva.
@@ -128,6 +137,8 @@ botvscode2/
 
 ## Documentação
 
+- [Regras para agentes de IA](AGENTS.md)
+- [Contexto estável do projeto](PROJECT_CONTEXT.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Arquitetura](docs/ARQUITETURA.md)
 - [Configuração do GitHub](docs/PROJECT_GITHUB.md)

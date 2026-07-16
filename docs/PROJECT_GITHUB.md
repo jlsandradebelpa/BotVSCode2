@@ -5,7 +5,8 @@
 - **URL**: https://github.com/jlsandradebelpa/BotVSCode2
 - **Visibilidade**: Público
 - **Branch padrão**: `main`
-- **Labels**: `enhancement`, `documentation`, `testing`, `chore`
+- **Labels de trabalho principais**: `bug`, `documentation`, `enhancement`,
+  `workflow`, `ui-ux`, `preferences`, `fase-3`
 
 ## Política de branches
 
@@ -45,11 +46,15 @@ Detalhes: [Fluxo de branches e promoção](FLUXO_BRANCHES.md).
 
 ### Regras de fluxo
 
-1. Toda issue nova entra como **Pendente**.
-2. Ao iniciar a execução, mover para **Em andamento**.
-3. Ao finalizar e validar, mover para **Concluído**.
-4. Nenhuma issue deve ficar sem status definido.
-5. O quadro (View 2) é o controle visual oficial do andamento.
+1. Toda funcionalidade, correção, refatoração relevante, mudança de
+   comportamento, decisão técnica ou documentação estrutural deve possuir uma
+   issue antes da implementação.
+2. Toda issue nova entra como **Pendente**.
+3. Ao iniciar a execução, mover para **Em andamento**.
+4. Ao finalizar e validar, mover para **Concluído**.
+5. Nenhuma issue deve ficar sem status definido.
+6. O quadro (View 2) é o controle visual oficial do andamento.
+7. Agentes de IA devem cumprir também o `AGENTS.md` da raiz do repositório.
 
 ### Issues da Fase 2
 

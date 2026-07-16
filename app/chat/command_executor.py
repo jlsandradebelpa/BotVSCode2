@@ -30,6 +30,40 @@ class CommandExecutor:
         self._context = context
         self._on_projeto_selecionado = on_projeto_selecionado
 
+    def _validar_git(self, projeto: Projeto) -> tuple[bool, str, dict]:
+        ok, output = self._git_service.fetch(projeto.pasta)
+        if not ok:
+            return False, f"Falha no fetch: {output}", {}
+
+        branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        details = (
+            f"Configurada: {projeto.branch or '---'} | "
+            f"Atual: {branch or '---'} | Upstream: {upstream or '---'}"
+        )
+        if branch != projeto.branch:
+            return False, f"Operação bloqueada: branch incorreta. {details}", {}
+        if not upstream:
+            return False, f"Operação bloqueada: branch sem upstream. {details}", {}
+        if upstream.split("/", 1)[-1] != branch:
+            return False, f"Operação bloqueada: upstream incompatível. {details}", {}
+        if self._git_service.has_conflicts(projeto.pasta):
+            return False, "Operação bloqueada: existem conflitos Git não resolvidos.", {}
+
+        status = self._git_service.get_branch_status(projeto.pasta)
+        try:
+            ahead = int(status.get("ahead", "?"))
+            behind = int(status.get("behind", "?"))
+        except (TypeError, ValueError):
+            return False, "Operação bloqueada: não foi possível comparar os commits.", {}
+        if ahead > 0 and behind > 0:
+            return (
+                False,
+                f"Operação bloqueada: branch divergente (à frente {ahead}, atrás {behind}).",
+                status,
+            )
+        return True, "", status
+
     def selecionar_projeto(self, args: str) -> str:
         projetos = self._project_service.projetos
         if not projetos:
@@ -87,16 +121,23 @@ class CommandExecutor:
             return "Nenhum projeto selecionado. Use /selecionar-projeto primeiro."
         if not self._git_service.is_git_repo(projeto.pasta):
             return f"O diretório de '{projeto.nome}' não é um repositório Git."
-        if self._git_service.has_uncommitted_changes(projeto.pasta):
+        valid, error, status = self._validar_git(projeto)
+        if not valid:
+            return error
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if changed_files:
+            files = "\n".join(item.get("path", "") for item in changed_files)
             return (
-                "Existem alterações locais pendentes. Faça commit antes de encerrar."
+                "Existem alterações locais pendentes. Use o botão Encerrar atividade "
+                f"para selecionar os arquivos:\n{files}"
             )
         branch = self._git_service.get_current_branch(projeto.pasta)
-        if not branch:
-            return "Não foi possível determinar a branch atual."
-        ok, output = self._git_service.push(projeto.pasta, branch)
-        if not ok:
-            return f"Falha no push: {output}"
+        if int(status["behind"]) > 0:
+            return "Push bloqueado: o remoto avançou. Inicie a atividade para atualizar."
+        if int(status["ahead"]) > 0:
+            ok, output = self._git_service.push(projeto.pasta, branch)
+            if not ok:
+                return f"Falha no push: {output}"
         self._historico_service.registrar(
             "Git", f"Atividades encerradas via chat: {projeto.nome}"
         )
@@ -111,10 +152,18 @@ class CommandExecutor:
             return "Nenhum projeto selecionado. Use /selecionar-projeto primeiro."
         if not self._git_service.is_git_repo(projeto.pasta):
             return f"O diretório de '{projeto.nome}' não é um repositório Git."
-        branch = self._git_service.get_current_branch(projeto.pasta)
-        ok, output = self._git_service.pull(projeto.pasta, branch)
-        if not ok:
-            return f"Falha ao atualizar: {output}"
+        valid, error, status = self._validar_git(projeto)
+        if not valid:
+            return error
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if changed_files:
+            files = "\n".join(item.get("path", "") for item in changed_files)
+            return f"Pull bloqueado por alterações locais:\n{files}"
+        if int(status["behind"]) > 0:
+            branch = self._git_service.get_current_branch(projeto.pasta)
+            ok, output = self._git_service.pull(projeto.pasta, branch)
+            if not ok:
+                return f"Falha ao atualizar com pull --ff-only: {output}"
         return (
             f"Documentação local atualizada com sucesso para '{projeto.nome}'."
         )

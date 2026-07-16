@@ -29,6 +29,8 @@ class InicioPage:
         self._projeto_atual: Optional[Projeto] = None
         self._on_mensagem: Callable[[str], None] = lambda msg: None
         self._commit_field: Optional[ft.TextField] = None
+        self._file_checkboxes: list[ft.Checkbox] = []
+        self._selected_files: list[str] = []
 
     def definir_on_mensagem(self, callback: Callable[[str], None]) -> None:
         self._on_mensagem = callback
@@ -172,19 +174,112 @@ class InicioPage:
             self._mensagem(f"Falha no fetch: {output}")
             return
 
-        status = self._git_service.get_branch_status(projeto.pasta)
         branch = self._git_service.get_current_branch(projeto.pasta)
-        behind = status.get("behind", "0")
-        if behind not in ("0", "?"):
-            if self._git_service.has_uncommitted_changes(projeto.pasta):
-                self._mensagem(
-                    "Existem alterações locais. Faça commit, stash ou descarte antes do pull."
-                )
-                return
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        if branch_error:
+            self._mensagem(branch_error)
+            return
+
+        if self._git_service.has_conflicts(projeto.pasta):
+            self._mensagem("BLOQUEADO: existem conflitos Git não resolvidos no projeto.")
+            return
+
+        status = self._git_service.get_branch_status(projeto.pasta)
+        ahead = self._numero_status(status.get("ahead", "?"))
+        behind = self._numero_status(status.get("behind", "?"))
+        if ahead is None or behind is None:
+            self._mensagem("BLOQUEADO: não foi possível comparar a branch local com o upstream.")
+            return
+        if ahead > 0 and behind > 0:
+            self._mensagem(
+                f"BLOQUEADO: branch divergente. Local à frente: {ahead}; atrás: {behind}."
+            )
+            return
+
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if changed_files:
+            self._mostrar_alteracoes_inicio(e, projeto, branch, upstream, status, changed_files)
+            return
+
+        if behind > 0:
             ok, output = self._git_service.pull(projeto.pasta, branch)
             if not ok:
-                self._mensagem(f"Falha no pull: {output}")
+                self._mensagem(f"Falha no pull --ff-only: {output}")
                 return
+
+        self._abrir_sessao(projeto)
+
+    @staticmethod
+    def _numero_status(value: str) -> Optional[int]:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _validar_branch(projeto: Projeto, branch: str, upstream: str) -> str:
+        details = (
+            f"Configurada: {projeto.branch or '---'} | "
+            f"Atual: {branch or '---'} | Upstream: {upstream or '---'}"
+        )
+        if not branch:
+            return f"BLOQUEADO: branch atual não identificada. {details}"
+        if branch != projeto.branch:
+            return f"BLOQUEADO: branch incorreta. {details}"
+        if not upstream:
+            return f"BLOQUEADO: branch sem upstream. {details}"
+        upstream_branch = upstream.split("/", 1)[-1]
+        if upstream_branch != branch:
+            return f"BLOQUEADO: upstream não corresponde à branch atual. {details}"
+        return ""
+
+    @staticmethod
+    def _formatar_arquivos(files: list[dict]) -> str:
+        return "\n".join(
+            f"{item.get('status', '??')}  {item.get('path', '')}" for item in files
+        )
+
+    def _mostrar_alteracoes_inicio(
+        self,
+        e: ft.ControlEvent,
+        projeto: Projeto,
+        branch: str,
+        upstream: str,
+        status: dict,
+        files: list[dict],
+    ) -> None:
+        texto = (
+            f"Branch atual: {branch}\n"
+            f"Upstream: {upstream}\n"
+            f"Commits à frente: {status.get('ahead', '?')}\n"
+            f"Commits atrás: {status.get('behind', '?')}\n\n"
+            f"Arquivos modificados:\n{self._formatar_arquivos(files)}\n\n"
+            "O pull não será executado. Deseja abrir a sessão mantendo essas alterações?"
+        )
+        dialog = ft.AlertDialog(
+            title=ft.Text("Alterações locais encontradas"),
+            content=ft.Container(content=ft.Text(texto, selectable=True), width=620),
+            actions=[
+                ft.TextButton(
+                    "Abrir sem atualizar",
+                    on_click=lambda event: self._confirmar_abertura_sem_pull(event, projeto),
+                ),
+                ft.TextButton("Cancelar", on_click=self._cancelar_inicio),
+            ],
+        )
+        e.page.show_dialog(dialog)
+        self._mensagem("Alterações locais encontradas. Pull bloqueado; escolha como continuar.")
+
+    def _confirmar_abertura_sem_pull(self, e: ft.ControlEvent, projeto: Projeto) -> None:
+        e.page.pop_dialog()
+        self._abrir_sessao(projeto, " Pull não executado devido a alterações locais.")
+
+    def _cancelar_inicio(self, e: ft.ControlEvent) -> None:
+        e.page.pop_dialog()
+        self._mensagem("Início da atividade cancelado; nenhuma alteração foi descartada.")
+
+    def _abrir_sessao(self, projeto: Projeto, observacao: str = "") -> None:
 
         if not self._vscode_service.installed():
             self._mensagem("VS Code não encontrado no PATH.")
@@ -194,9 +289,9 @@ class InicioPage:
             return
 
         self._historico_service.registrar(
-            "Git", f"Projeto iniciado e sincronizado: {projeto.nome}"
+            "Git", f"Projeto iniciado: {projeto.nome}.{observacao}"
         )
-        self._mensagem(f"Atividade iniciada. Ambiente de {projeto.nome} pronto.")
+        self._mensagem(f"Atividade iniciada. Ambiente de {projeto.nome} pronto.{observacao}")
         self._atualizar()
 
     def encerrar_atividade(self, e: ft.ControlEvent) -> None:
@@ -213,9 +308,39 @@ class InicioPage:
             self._mensagem("ERRO: o diretório não é um repositório Git.")
             return
 
-        if not self._git_service.has_uncommitted_changes(projeto.pasta):
-            branch = self._git_service.get_current_branch(projeto.pasta)
-            ok, output = self._git_service.push(projeto.pasta, branch)
+        success, output = self._git_service.fetch(projeto.pasta)
+        if not success:
+            self._mensagem(f"Falha no fetch antes do encerramento: {output}")
+            return
+
+        branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        if branch_error:
+            self._mensagem(branch_error)
+            return
+        if self._git_service.has_conflicts(projeto.pasta):
+            self._mensagem("BLOQUEADO: resolva os conflitos Git antes de encerrar.")
+            return
+
+        status = self._git_service.get_branch_status(projeto.pasta)
+        ahead = self._numero_status(status.get("ahead", "?"))
+        behind = self._numero_status(status.get("behind", "?"))
+        if ahead is None or behind is None:
+            self._mensagem("BLOQUEADO: não foi possível comparar a branch com o upstream.")
+            return
+        if behind > 0:
+            self._mensagem(
+                f"BLOQUEADO: o remoto avançou {behind} commit(s). Atualize com segurança antes do push."
+            )
+            return
+
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if not changed_files:
+            if ahead > 0:
+                ok, output = self._git_service.push(projeto.pasta, branch)
+            else:
+                ok, output = True, "Branch já sincronizada."
             if not ok:
                 self._mensagem(f"Falha no push: {output}")
                 return
@@ -228,31 +353,66 @@ class InicioPage:
             self._atualizar()
             return
 
-        self._mensagem("Alterações locais encontradas.")
+        self._mostrar_selecao_arquivos(e, changed_files)
+
+    def _mostrar_selecao_arquivos(self, e: ft.ControlEvent, files: list[dict]) -> None:
+        self._file_checkboxes = [
+            ft.Checkbox(
+                label=f"{item.get('status', '??')}  {item.get('path', '')}",
+                value=False,
+                data=item.get("path", ""),
+            )
+            for item in files
+        ]
         dialog = ft.AlertDialog(
-            title=ft.Text("Commit e Push"),
-            content=ft.Text("Deseja commitar e enviar as alterações?"),
+            title=ft.Text("Selecionar arquivos para o commit"),
+            content=ft.Container(
+                content=ft.Column(self._file_checkboxes, scroll=ft.ScrollMode.AUTO),
+                width=650,
+                height=min(420, max(120, len(files) * 48)),
+            ),
             actions=[
-                ft.TextButton("Sim", on_click=self._confirmar_commit),
-                ft.TextButton("Não", on_click=self._cancelar_commit),
+                ft.TextButton("Continuar", on_click=self._confirmar_selecao),
+                ft.TextButton("Cancelar", on_click=self._cancelar_commit),
             ],
         )
         e.page.show_dialog(dialog)
+        self._mensagem("Selecione explicitamente os arquivos que deverão entrar no commit.")
 
-    def _confirmar_commit(self, e: ft.ControlEvent) -> None:
+    def _confirmar_selecao(self, e: ft.ControlEvent) -> None:
         if not self._projeto_atual:
+            return
+        self._selected_files = [
+            str(checkbox.data)
+            for checkbox in self._file_checkboxes
+            if checkbox.value and checkbox.data
+        ]
+        if not self._selected_files:
+            self._mensagem("Selecione pelo menos um arquivo antes de continuar.")
             return
         e.page.pop_dialog()
         self._commit_field = ft.TextField(
-            hint_text="Digite a mensagem do commit...",
+            label="Mensagem do commit",
+            value=(
+                f"Atualiza {self._projeto_atual.nome} - "
+                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            ),
             multiline=False,
             autofocus=True,
         )
+        arquivos = "\n".join(self._selected_files)
         dialog = ft.AlertDialog(
-            title=ft.Text("Mensagem do Commit"),
-            content=self._commit_field,
+            title=ft.Text("Confirmar commit"),
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Text("Arquivos selecionados:", weight=ft.FontWeight.BOLD),
+                    ft.Text(arquivos, selectable=True),
+                    self._commit_field,
+                ]),
+                width=650,
+            ),
             actions=[
-                ft.TextButton("Confirmar", on_click=self._executar_commit),
+                ft.TextButton("Confirmar commit e push", on_click=self._executar_commit),
                 ft.TextButton("Cancelar", on_click=lambda ev: ev.page.pop_dialog()),
             ],
         )
@@ -268,7 +428,7 @@ class InicioPage:
             return
         e.page.pop_dialog()
 
-        ok, output = self._git_service.stage_all(projeto.pasta)
+        ok, output = self._git_service.stage_files(projeto.pasta, self._selected_files)
         if not ok:
             self._mensagem(f"Erro ao preparar arquivos: {output}")
             return
@@ -277,7 +437,29 @@ class InicioPage:
             self._mensagem(f"Erro no commit: {output}")
             return
 
+        ok, output = self._git_service.fetch(projeto.pasta)
+        if not ok:
+            self._historico_service.registrar(
+                "Git", f"Commit local em {projeto.nome}; fetch antes do push falhou: {message}"
+            )
+            self._mensagem(f"Commit local realizado, mas o fetch antes do push falhou: {output}")
+            self._atualizar()
+            return
+
         branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        status = self._git_service.get_branch_status(projeto.pasta)
+        behind = self._numero_status(status.get("behind", "?"))
+        if branch_error or behind is None or behind > 0:
+            detalhe = branch_error or f"O remoto avançou {behind} commit(s)."
+            self._historico_service.registrar(
+                "Git", f"Commit local em {projeto.nome}; push bloqueado: {message}"
+            )
+            self._mensagem(f"Commit local realizado, mas o push foi bloqueado. {detalhe}")
+            self._atualizar()
+            return
+
         ok, output = self._git_service.push(projeto.pasta, branch)
         if not ok:
             self._historico_service.registrar(

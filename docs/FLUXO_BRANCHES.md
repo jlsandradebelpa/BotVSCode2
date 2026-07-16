@@ -29,9 +29,10 @@ Separar o trabalho diário da versão oficial do BotVSCode2.
 | `BotVSCode` | `devjlsa` |
 | `BotVsCode2` | `devjlsa` |
 
-Os arquivos `config/projetos.json` e `mcp_server/projetos.json` devem refletir
-essa matriz. A tela Início apresenta a branch configurada no cadastro, enquanto
-as operações Git devem validar também a branch real do repositório.
+O arquivo versionado `config/projetos.default.json` fornece a matriz inicial.
+As escolhas pessoais ficam em `%APPDATA%\BotVsCode2\projetos.json`, fora do Git.
+A tela Início apresenta a branch configurada no cadastro e as operações Git
+validam também a branch real e o upstream do repositório.
 
 `candidato_cbaa` permanece fora deste fluxo enquanto não houver clone local
 validado nesta estação.

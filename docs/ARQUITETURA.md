@@ -28,6 +28,7 @@ O BotVSCode2 segue uma arquitetura em **três camadas**:
 │  historico.py                   │
 │  vscode.py                      │
 │  config.py / utils.py           │
+│  data_paths.py / app_state.py   │
 └─────────────────────────────────┘
 ```
 
@@ -39,6 +40,8 @@ O BotVSCode2 segue uma arquitetura em **três camadas**:
 app/
 ├── main.py              # Entry point Flet
 ├── config.py            # Leitura da configuração (Config dataclass)
+├── data_paths.py        # Migração e diretórios pessoais em APPDATA
+├── app_state.py         # Estado persistente da interface
 ├── preferences.py       # Persistência das preferências visuais
 ├── projetos.py          # ProjetosManager + Projeto dataclass (CRUD)
 ├── menu.py              # Menu terminal (legado — mantido como referência)
@@ -74,11 +77,13 @@ app/
 #### projetos.py
 - Dataclass `Projeto`: `nome`, `pasta`, `branch`, `linguagem`, `github_repo`, `historico_pasta`
 - Classe `ProjetosManager`: CRUD completo (`save`, `adicionar`, `editar`, `remover`, `existe_nome`, `carregar`)
-- Persistência em `config/projetos.json` com `json.dump(indent=2, ensure_ascii=False)`
+- Persistência pessoal em `%APPDATA%/BotVsCode2/projetos.json`
+- `config/projetos.default.json` é usado somente na primeira execução
 
 #### git_tools.py
 - Classe `GitTools`: encapsula comandos Git via `subprocess`
-- Métodos: `is_git_repo()`, `fetch()`, `pull()`, `push()`, `commit()`, `stage_all()`, `status_short()`, `has_uncommitted_changes()`, `get_current_branch()`, `get_branch_status()`
+- Executa subprocessos sem shell e usa `schannel` no Windows
+- Oferece fetch com prune, `pull --ff-only`, upstream, conflitos, comparação de commits e staging seletivo
 
 #### github_tools.py
 - `list_open_issues(repo)`: consulta GitHub Issues via CLI `gh` ou API REST
@@ -126,7 +131,7 @@ Cada Service é um **wrapper fino** que:
 - Última sincronização e última atividade
 
 #### páginas/projetos.py
-- Lista de projetos (carregada de `projetos.json`)
+- Lista de projetos carregada de `%APPDATA%/BotVsCode2/projetos.json`
 - Formulário de cadastro/edição (Nome, Pasta, Branch, Linguagem, GitHub, Histórico)
 - Botões: Novo, Salvar, Remover
 
@@ -139,7 +144,7 @@ Cada Service é um **wrapper fino** que:
 #### páginas/preferencias.py
 - Tema claro, escuro ou conforme o sistema
 - Cor de destaque e fonte
-- Persistência em `config/preferences.json`
+- Persistência em `%APPDATA%/BotVsCode2/preferences.json`
 
 ## Fluxo de Dados
 
@@ -161,27 +166,25 @@ Resultado → UI atualizada
 1. Validar projeto selecionado
 2. Verificar se caminho existe
 3. Verificar se é repositório Git
-4. Executar Git Fetch
-5. Comparar branch local vs remota
-6. Se remoto à frente → Git Pull
-7. Abrir VS Code (se instalado)
-8. Registrar atividade no histórico
-9. Atualizar tela com status
+4. Executar `git fetch --all --prune`
+5. Validar branch configurada, branch atual e upstream
+6. Bloquear conflitos ou divergência
+7. Se houver alterações locais, listar e permitir abrir sem pull ou cancelar
+8. Se o remoto estiver à frente e for seguro, executar `git pull --ff-only`
+9. Abrir VS Code e registrar a sessão
 ```
 
 ## Fluxo "Encerrar Atividade"
 
 ```
 1. Validar projeto selecionado
-2. Verificar alterações locais
-3. Se sem alterações → Push direto
-4. Se com alterações:
-   a. Perguntar se deseja commitar
-   b. Solicitar mensagem do commit
-   c. Stage All → Commit → Push
-5. Fechar VS Code (se configurado)
-6. Registrar atividade no histórico
-7. Atualizar tela com status
+2. Executar fetch e validar branch/upstream
+3. Bloquear conflitos, divergência ou remoto à frente
+4. Listar arquivos e exigir seleção explícita
+5. Sugerir mensagem de commit e permitir edição
+6. Executar `git add` somente nos arquivos selecionados e confirmar o commit
+7. Executar novo fetch; bloquear push se o remoto avançou
+8. Fazer push, fechar VS Code e registrar a atividade
 ```
 
 ## Decisões de Arquitetura
@@ -189,7 +192,7 @@ Resultado → UI atualizada
 1. **Flet como framework UI**: moderno, Python puro, dark theme nativo, componentes responsivos
 2. **Services como ponte**: UI nunca acessa Core diretamente — isolamento total de responsabilidades
 3. **ProjetosManager com CRUD**: métodos `save/adicionar/editar/remover/existe_nome` com persistência imediata
-4. **Config e Projetos em JSON**: compatibilidade total com BotVSCode original
+4. **Dados pessoais fora do Git**: JSONs pessoais em APPDATA e padrões versionados no repositório
 5. **Dataclasses para modelos**: tipagem e sem boilerplate
 6. **Git via subprocess**: sem dependências externas de bibliotecas Git
 7. **menu.py mantido**: referência técnica do fluxo original, não utilizado pela UI

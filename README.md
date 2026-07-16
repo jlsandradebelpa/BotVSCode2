@@ -17,6 +17,11 @@ O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** uti
 - Tela **Configurações**: informações técnicas do ambiente
 - Tela **Preferências**: tema, cor de destaque e fonte com persistência em JSON
 - Fluxos Git de início e encerramento com validação e mensagens de falha
+- Configurações pessoais, estado, histórico, logs e backups em `%APPDATA%\BotVsCode2`
+- Atualização somente por fast-forward (`git pull --ff-only`)
+- Validação explícita de branch configurada, branch atual e upstream
+- Seleção individual dos arquivos antes de commit e novo fetch antes do push
+- Backend de certificados `schannel` no Windows
 - Serviços desacoplados (camada Service entre UI e regras de negócio)
 - Backward compatible com `config/projetos.json` do BotVSCode original
 
@@ -66,8 +71,10 @@ Ou clique no atalho **BotVSCode2** na Área de Trabalho.
 
 O desenvolvimento do BotVSCode2 ocorre em `devjlsa`. A branch `main`
 representa a versão estável e recebe alterações somente por Pull Request após
-validação. A tela Início exibe a branch cadastrada para o projeto selecionado;
-por isso, `config/projetos.json` deve permanecer alinhado ao repositório local.
+validação. A tela Início exibe e valida a branch cadastrada para o projeto
+selecionado. As configurações pessoais ficam fora do Git, em
+`%APPDATA%\BotVsCode2`; os arquivos `config/*.default.json` contêm apenas os
+valores iniciais distribuídos com a aplicação.
 
 Nesta estação, ImpProtheusSOC, CBAA Asfaltos, BotVSCode e BotVSCode2 usam
 `devjlsa`. `candidato_cbaa` permanece cadastrado apenas como referência e não
@@ -113,7 +120,7 @@ botvscode2/
 │           ├── configuracoes.py
 │           └── preferencias.py
 ├── assets/                   # Recursos visuais (avatar, etc.)
-├── config/                   # Configurações JSON
+├── config/                   # Configurações padrão versionadas
 ├── docs/                     # Documentação
 ├── logs/                     # Logs
 └── pyproject.toml
@@ -128,6 +135,8 @@ botvscode2/
 - [Fase 2 — Interface Gráfica](docs/FASE_02.md)
 - [Fase 3 — UX, Preferências e Fluxos](docs/FASE_03_UX_FLUXOS.md)
 - [Sprint 03 — Chat Integrado](docs/FASE_05_CHAT_INTEGRADO.md)
+- [Plano oficial de estabilização](docs/PLANO_OFICIAL_ESTABILIZACAO_BOTVSCODE2.md)
+- [Relatório da estabilização](docs/RELATORIO_ESTABILIZACAO_2026-07-15.md)
 
 ## Licença
 

@@ -5,7 +5,9 @@ from typing import Optional
 
 import flet as ft
 
+from app_state import AppState
 from config import Config
+from data_paths import AppDataPaths
 from projetos import Projeto, ProjetosManager
 from services.git_service import GitService
 from services.github_service import GitHubService
@@ -28,17 +30,20 @@ class BotVSCode2App:
         config: Config,
         projetos_manager: ProjetosManager,
         preferences_service: PreferencesService,
+        data_paths: Optional[AppDataPaths] = None,
     ) -> None:
         self._config = config
         self._projetos_manager = projetos_manager
+        self._state_path = data_paths.state if data_paths else None
+        self._state = AppState.load(self._state_path) if self._state_path else AppState()
 
         self._project_service = ProjectService(projetos_manager)
         self._git_service = GitService(config.workspace_drive)
         self._github_service = GitHubService()
         self._vscode_service = VSCodeService(config.workspace_drive)
 
-        hist_pasta: Optional[Path] = None
-        if config.historico_pasta:
+        hist_pasta: Optional[Path] = data_paths.sessions_dir if data_paths else None
+        if hist_pasta is None and config.historico_pasta:
             hist_pasta = Path(config.historico_pasta)
         self._historico_service = HistoricoService(hist_pasta)
         self._preferences_service = preferences_service
@@ -67,7 +72,14 @@ class BotVSCode2App:
             self._on_mensagem,
         )
 
-        self._projeto_atual: Optional[Projeto] = None
+        self._projeto_atual: Optional[Projeto] = next(
+            (
+                projeto
+                for projeto in self._project_service.projetos
+                if projeto.nome == self._state.selected_project
+            ),
+            None,
+        )
         self._aba_atual = 0
 
     def _on_mensagem(self, texto: str) -> None:
@@ -77,6 +89,9 @@ class BotVSCode2App:
 
     def _on_projeto_selecionado(self, projeto: Optional[Projeto]) -> None:
         self._projeto_atual = projeto
+        self._state = AppState(selected_project=projeto.nome if projeto else "")
+        if self._state_path:
+            self._state.save(self._state_path)
         self._inicio_page.definir_projeto(projeto)
         if projeto:
             self._on_mensagem(f"Projeto selecionado: {projeto.nome}")

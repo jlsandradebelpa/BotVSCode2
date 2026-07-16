@@ -19,6 +19,10 @@ venv/
 *.pid
 historico_atividades_*.txt
 
+# Dados pessoais (somente os arquivos *.default.json são versionados)
+config/projetos.json
+config/preferences.json
+
 # OS
 Thumbs.db
 .DS_Store

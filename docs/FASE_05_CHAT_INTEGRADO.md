@@ -86,6 +86,7 @@ Todos os comandos iniciarão por `/`. Ao digitar `/`, abrir automaticamente uma 
 | `/encerrar-atividades` | Encerra atividades do dia |
 | `/atualizar-documentacao-local` | Atualiza documentação local |
 | `/ajuda` | Exibe ajuda dos comandos |
+| `/commit <mensagem>` | Commita e envia todas as alterações do projeto atual |
 
 Nenhum outro comando será implementado nesta Sprint.
 
@@ -159,7 +160,7 @@ Será considerado concluído quando:
 - [ ] Campo de digitação funcionando com prefixo `>`
 - [ ] Menu `/` funcionando (lista de comandos ao digitar `/`)
 - [ ] Autocomplete funcionando
-- [ ] Comandos registrados no Registry (6 comandos)
+- [x] Comandos registrados no Registry (7 comandos)
 - [ ] Contexto do projeto funcionando entre comandos
 
 ---

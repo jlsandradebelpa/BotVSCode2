@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import urllib.error
@@ -34,7 +35,8 @@ def _list_open_issues_with_gh(repo: str) -> Optional[List[Dict]]:
         "number,title,labels,state,url",
     ]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+        kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=20, **kwargs)
         if result.returncode != 0:
             return None
         data = json.loads(result.stdout)

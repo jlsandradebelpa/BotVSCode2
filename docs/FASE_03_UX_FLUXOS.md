@@ -48,7 +48,7 @@ fluxos de início e encerramento de atividade.
 
 - Nova aba **Preferências** na navegação principal.
 - Permite alterar tema (claro, escuro ou sistema), cor de destaque e fonte.
-- Preferências são gravadas em `config/preferences.json` e reaplicadas ao abrir.
+- Preferências são gravadas em `%APPDATA%/BotVsCode2/preferences.json` e reaplicadas ao abrir.
 - Existe uma ação para restaurar os padrões.
 
 ### 8. Fluxos Iniciar e Encerrar Atividade
@@ -86,7 +86,7 @@ Core + persistência JSON
 - `app/ui/paginas/preferencias.py`: edição das preferências visuais.
 - `app/preferences.py`: modelo e persistência das preferências.
 - `app/services/preferences_service.py`: acesso da UI à persistência.
-- `config/preferences.json`: valores escolhidos pelo usuário.
+- `%APPDATA%/BotVsCode2/preferences.json`: valores escolhidos pelo usuário.
 
 ## Fora do escopo
 

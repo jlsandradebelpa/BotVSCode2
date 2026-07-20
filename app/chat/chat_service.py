@@ -66,6 +66,16 @@ class ChatService:
             "Pull do projeto atual",
         )
         self._registry.register(
+            "commit",
+            self._executor._executar_commit_chat,
+            "Prepara, commita e envia alterações: /commit <mensagem>",
+        )
+        self._registry.register(
+            "opencode",
+            self._executor.opencode,
+            "Abre o OpenCode para o projeto atual",
+        )
+        self._registry.register(
             "ajuda",
             self._executor.ajuda,
             "Exibe esta mensagem de ajuda",
@@ -106,8 +116,9 @@ class ChatService:
 
     def _handle_selection(self, text: str) -> str:
         self._context.awaiting_selection = False
+        clean = text.strip().lstrip("/")
         try:
-            indice = int(text.strip()) - 1
+            indice = int(clean) - 1
         except ValueError:
             return "Digite o número do projeto desejado."
         return self._executor._selecionar_por_indice(indice)

@@ -90,6 +90,37 @@ Foram criados testes para estado da interface, migração, rollback, proteção 
 - Preferências reais salvas novamente em `%APPDATA%` sem criar alteração do JSON pessoal no Git.
 - Inicialização real do Flet: processo aberto e responsivo, encerrado após a inspeção.
 
+## Correções posteriores (20/07/2026)
+
+Após o período de observação, os seguintes bugs foram corrigidos e melhorias implementadas:
+
+### Correções
+
+- **`git_tools.py`**: `push()` e `pull()` agora usam `git push <remote> <branch>` e `git pull --ff-only <remote> <branch>` extraindo remote do upstream — antes ignoravam branch configurada.
+- **`vscode.py`**: `close_vscode()` agora mata apenas o VS Code do projeto (filtro PowerShell por `CommandLine` contendo o nome da pasta), não todas as instâncias.
+- **`projetos.py`**: `_load()` trata JSON corrompido silenciosamente (lista vazia) em vez de crashar.
+- **`git_tools.py`**: `get_changed_files()` — renames/copies (status R/C) agora retornam `path`=novo, `original`=antigo (estavam invertidos).
+- **`inicio.py`**: Timestamp "Última sincronização" só atualiza com `sincronizado=True`.
+- **`tools_git.py` (MCP)**: `arquivos_alterados` agora exclui arquivos novos/não rastreados (`??`) — antes contava dobrado.
+- **`preferences.py`**: `save()` agora usa escrita atômica (temp + replace) para evitar corrupção.
+- **`chat_service.py`**: `_handle_selection()` usa `.lstrip("/")` antes de `int()` — `/8` agora funciona.
+- **Chat**: `encerrar_atividades` agora oferece `/commit <msg>` em vez de redirecionar para GUI; inclui re-fetch antes do push.
+- **CREATE_NO_WINDOW** adicionado em todos os subprocess calls (`git_tools.py`, `vscode.py`, `github_tools.py`, `mcp_server/tools_git.py`, `app.py`) eliminando a janela preta do terminal.
+
+### Melhorias
+
+- **Menu suspenso**: `PopupMenuButton` na barra principal com Configurações, Sobre (v2.0.0) e Backlog (git log + GitHub issues abertas).
+- **Skill `gestao-projetos`**: criada para opencode em `~/.config/opencode/skills/gestao-projetos/SKILL.md`.
+
+### Issues criadas no GitHub
+
+- [#20](https://github.com/jlsandradebelpa/BotVSCode2/issues/20) — bugs críticos (push/pull, close_vscode, JSON, terminal)
+- [#21](https://github.com/jlsandradebelpa/BotVSCode2/issues/21) — rename, timestamp, MCP, chat /8
+- [#22](https://github.com/jlsandradebelpa/BotVSCode2/issues/22) — chat /commit + re-fetch
+- [#23](https://github.com/jlsandradebelpa/BotVSCode2/issues/23) — menu suspenso
+
+Todas adicionadas ao Project 9 BotVSCode2 com status **Concluído**.
+
 ## Próximos passos operacionais
 
 1. Usar o BotVsCode2 por alguns dias na branch `devjlsa`.

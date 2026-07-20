@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -328,6 +330,102 @@ class BotVSCode2App:
             ink=True,
         )
 
+    def _mostrar_sobre(self, e: ft.ControlEvent) -> None:
+        dlg = ft.AlertDialog(
+            title=ft.Text("Sobre o BotVSCode2"),
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Text("BotVSCode2 v2.0.0", size=18, weight=ft.FontWeight.BOLD),
+                    ft.Text("Assistente de produtividade para desenvolvedores", size=13),
+                    ft.Divider(height=1),
+                    ft.Text("Autor: Jorge Andrade", size=13),
+                    ft.Text("Licença: MIT", size=13),
+                    ft.Text("Repositório: jlsandradebelpa/BotVSCode2", size=13),
+                    ft.Text("Tecnologias: Python + Flet + Git", size=13),
+                ], spacing=6),
+                width=400,
+            ),
+            actions=[ft.TextButton("Fechar", on_click=lambda ev: ev.control.page.pop_dialog())],
+        )
+        e.page.show_dialog(dlg)
+
+    def _mostrar_backlog(self, e: ft.ControlEvent) -> None:
+        repo = "jlsandradebelpa/BotVSCode2"
+
+        try:
+            repo_dir = Path(__file__).resolve().parent.parent.parent
+            kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+            result = subprocess.run(
+                ["git", "log", "--format=%ad|||%s", "--date=short", "--no-decorate", "-30"],
+                cwd=str(repo_dir),
+                capture_output=True, text=True, encoding="utf-8",
+                timeout=15, **kwargs,
+            )
+            raw = result.stdout.strip() if result.returncode == 0 else ""
+        except Exception:
+            raw = ""
+
+        if raw:
+            linhas = []
+            data_atual = ""
+            seq = 0
+            for linha in raw.split("\n"):
+                if "|||" not in linha:
+                    continue
+                data, msg = linha.split("|||", 1)
+                if data != data_atual:
+                    data_atual = data
+                    seq = 0
+                    linhas.append("")
+                    linhas.append(data)
+                seq += 1
+                linhas.append(f"  {seq}. {msg.strip()}")
+            log_texto = "\n".join(linhas).strip()
+        else:
+            log_texto = "Nenhum histórico encontrado."
+
+        issues = self._github_service.listar_issues(repo)
+        if issues:
+            issues_lines = [""]
+            for issue in issues:
+                num = issue.get("number", "?")
+                titulo = issue.get("title", "Sem título")
+                issues_lines.append(f"  #{num} - {titulo}")
+            issues_texto = "\n".join(issues_lines)
+        else:
+            issues_texto = "\n  Nenhuma issue em aberto."
+
+        elementos = [
+            ft.Text("Últimas atualizações:", size=14, weight=ft.FontWeight.BOLD),
+            ft.Container(
+                content=ft.Text(log_texto, size=12, selectable=True, font_family="monospace"),
+                padding=ft.Padding(top=4, left=0, right=0, bottom=0),
+            ),
+            ft.Divider(height=16),
+            ft.Text("Issues em aberto:", size=14, weight=ft.FontWeight.BOLD),
+            ft.Container(
+                content=ft.Text(issues_texto, size=12, selectable=True),
+                padding=ft.Padding(top=4, left=0, right=0, bottom=0),
+            ),
+        ]
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("Backlog de atualizações"),
+            content=ft.Container(
+                content=ft.Column(elementos),
+                width=680,
+            ),
+            scrollable=True,
+            actions=[ft.TextButton("Fechar", on_click=lambda ev: ev.control.page.pop_dialog())],
+        )
+        e.page.show_dialog(dlg)
+
+    def _menu_ir_config(self, e: ft.ControlEvent) -> None:
+        if hasattr(self, "_page"):
+            self._page.navigation_bar.selected_index = 3
+            self._mudar_aba(self._page, 3)
+            self._page.update()
+
     def run(self, page: ft.Page) -> None:
         self._page = page
         aplicar_tema(page, self._preferences_service.preferences)
@@ -349,6 +447,16 @@ class BotVSCode2App:
             expand=True,
         )
 
+        menu = ft.PopupMenuButton(
+            icon=ft.Icons.MENU,
+            tooltip="Menu",
+            items=[
+                ft.PopupMenuItem(content=ft.Text("Configurações"), icon=ft.Icons.SETTINGS, on_click=self._menu_ir_config),
+                ft.PopupMenuItem(content=ft.Text("Sobre"), icon=ft.Icons.INFO, on_click=self._mostrar_sobre),
+                ft.PopupMenuItem(content=ft.Text("Backlog de atualizações"), icon=ft.Icons.HISTORY, on_click=self._mostrar_backlog),
+            ],
+        )
+
         barra_principal = ft.Container(
             content=ft.Row([
                 nav,
@@ -363,7 +471,9 @@ class BotVSCode2App:
                     icon=ft.Icons.STOP,
                     on_click=self._encerrar_atividade,
                 ),
-                ft.Container(width=12),
+                ft.Container(expand=True),
+                menu,
+                ft.Container(width=8),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
             bgcolor=ft.Colors.SURFACE_CONTAINER,
         )

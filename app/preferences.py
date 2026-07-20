@@ -32,5 +32,7 @@ class Preferences:
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as file:
+        temporary = path.with_suffix(f"{path.suffix}.tmp")
+        with open(temporary, "w", encoding="utf-8") as file:
             json.dump(asdict(self), file, indent=2, ensure_ascii=False)
+        temporary.replace(path)

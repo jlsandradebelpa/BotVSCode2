@@ -46,7 +46,7 @@ UI (Flet) → Services → Core (Regras de Negócio)
 - Área de mensagens
 
 ### Projetos
-- Lista de projetos carregada de `config/projetos.json`
+- Lista de projetos carregada de `%APPDATA%/BotVsCode2/projetos.json`
 - Formulário de cadastro/edição
 - CRUD completo: adicionar, editar, remover
 - Persistência com `json.dump(indent=2, ensure_ascii=False)`
@@ -74,7 +74,7 @@ UI (Flet) → Services → Core (Regras de Negócio)
 - `listar_arquivos(pasta)` — listar arquivos disponíveis
 
 ### VS Code (vscode.py)
-- `close_vscode(project_path)` — fechar VS Code via taskkill
+- `close_vscode(project_path)` — fechar VS Code filtrando por nome da pasta do projeto via `Get-CimInstance` (Windows)
 
 ## Fluxo "Iniciar Atividade"
 

@@ -54,7 +54,7 @@ class InicioPage:
             self._txt_branch.value = ""
         self._atualizar()
 
-    def _atualizar(self) -> None:
+    def _atualizar(self, sincronizado: bool = False) -> None:
         if not hasattr(self, "_txt_status_git"):
             return
 
@@ -83,7 +83,8 @@ class InicioPage:
             self._txt_status_vscode.value = "---"
             self._txt_ultima_ativ.value = "---"
 
-        self._txt_ultima_sinc.value = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        if sincronizado:
+            self._txt_ultima_sinc.value = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         try:
             if self._txt_status_git.page:
                 self._txt_status_git.page.update()
@@ -292,7 +293,7 @@ class InicioPage:
             "Git", f"Projeto iniciado: {projeto.nome}.{observacao}"
         )
         self._mensagem(f"Atividade iniciada. Ambiente de {projeto.nome} pronto.{observacao}")
-        self._atualizar()
+        self._atualizar(sincronizado=True)
 
     def encerrar_atividade(self, e: ft.ControlEvent) -> None:
         if not self._projeto_atual:
@@ -350,7 +351,7 @@ class InicioPage:
             if self._vscode_service.installed():
                 self._vscode_service.fechar(projeto.pasta)
             self._mensagem(f"Atividade encerrada. Branch {branch} sincronizada.")
-            self._atualizar()
+            self._atualizar(sincronizado=True)
             return
 
         self._mostrar_selecao_arquivos(e, changed_files)
@@ -475,7 +476,7 @@ class InicioPage:
         if self._vscode_service.installed():
             self._vscode_service.fechar(projeto.pasta)
         self._mensagem("Atividade encerrada. Commit e push realizados com sucesso.")
-        self._atualizar()
+        self._atualizar(sincronizado=True)
 
     def _cancelar_commit(self, e: ft.ControlEvent) -> None:
         e.page.pop_dialog()

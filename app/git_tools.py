@@ -47,9 +47,9 @@ class GitTools:
             status = record[:2]
             path = record[3:]
             if status[0] in ("R", "C") and index < len(records):
-                original = records[index]
+                novo_caminho = records[index]
                 index += 1
-                files.append({"status": status, "path": path, "original": original})
+                files.append({"status": status, "path": novo_caminho, "original": path})
             else:
                 files.append({"status": status, "path": path})
         return files
@@ -87,9 +87,15 @@ class GitTools:
         return {"ahead": "0", "behind": "0", "upstream": upstream}
 
     def pull(self, branch: str = "") -> Tuple[bool, str]:
-        if not self.get_current_branch():
+        if not branch:
+            branch = self.get_current_branch()
+        if not branch:
             return False, "Nao foi possivel determinar a branch atual."
-        return self._run_cmd("pull", "--ff-only")
+        upstream = self.get_upstream()
+        if not upstream:
+            return False, "Nao foi possivel determinar o upstream."
+        remote = upstream.split("/", 1)[0]
+        return self._run_cmd("pull", "--ff-only", remote, branch)
 
     def stage_files(self, paths: Sequence[str]) -> Tuple[bool, str]:
         clean_paths = [path for path in paths if path]
@@ -108,7 +114,11 @@ class GitTools:
             branch = self.get_current_branch()
         if not branch:
             return False, "Nao foi possivel determinar a branch atual."
-        return self._run_cmd("push")
+        upstream = self.get_upstream()
+        if not upstream:
+            return False, "Nao foi possivel determinar o upstream."
+        remote = upstream.split("/", 1)[0]
+        return self._run_cmd("push", remote, branch)
 
     def shortlog(self, count: int = 5) -> Tuple[bool, str]:
         return self._run_cmd("log", "--oneline", f"-{count}")
@@ -117,8 +127,10 @@ class GitTools:
         self, *args: str, check: bool = True
     ) -> subprocess.CompletedProcess:
         environment = os.environ.copy()
+        kwargs = {}
         if os.name == "nt":
             environment["GIT_SSL_BACKEND"] = "schannel"
+            kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
         return subprocess.run(
             ["git", "-C", str(self._repo), *args],
             capture_output=True,
@@ -127,6 +139,7 @@ class GitTools:
             errors="replace",
             env=environment,
             check=check,
+            **kwargs,
         )
 
     def _run_cmd(self, *args: str) -> Tuple[bool, str]:

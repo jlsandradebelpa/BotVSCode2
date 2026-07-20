@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -60,7 +61,8 @@ def _localizar_projeto(nome: str) -> dict | None:
 
 def _executar_git(caminho: str, *args: str) -> tuple[int, str, str]:
     cmd = ["git", "-C", caminho, *args]
-    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+    kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", **kwargs)
     return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
 
 
@@ -115,7 +117,7 @@ def tool_status_git(projeto: str) -> str:
     _, remotes, _ = _executar_git(caminho, "remote", "-v")
 
     linhas_status = [s for s in status.split("\n") if s.strip()]
-    alterados = [s[3:] for s in linhas_status if s.strip()]
+    modificados = [s[3:] for s in linhas_status if not s.startswith("??") and s.strip()]
     novos = [s[3:] for s in linhas_status if s.startswith("??")]
 
     return json.dumps({
@@ -123,8 +125,8 @@ def tool_status_git(projeto: str) -> str:
         "caminho": caminho,
         "branch": branch,
         "remote": remotes,
-        "arquivos_alterados": len(alterados),
-        "arquivos_alterados_lista": alterados,
+        "arquivos_alterados": len(modificados),
+        "arquivos_alterados_lista": modificados,
         "arquivos_novos": len(novos),
         "arquivos_novos_lista": novos,
     }, ensure_ascii=False, indent=2)

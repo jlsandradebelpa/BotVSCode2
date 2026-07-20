@@ -40,7 +40,7 @@ Detalhamento: [FASE_03_UX_FLUXOS.md](FASE_03_UX_FLUXOS.md)
 - [x] Campo de digitação com prefixo `>`
 - [x] Sistema de comandos via `/` com autocomplete
 - [x] CommandRegistry (sem cadeia de IFs)
-- [x] 6 comandos registrados
+- [x] 7 comandos registrados (adicionado `/commit <mensagem>`)
 - [x] Contexto de sessão (projeto atual em memória)
 
 Detalhamento: [FASE_05_CHAT_INTEGRADO.md](FASE_05_CHAT_INTEGRADO.md)
@@ -52,9 +52,22 @@ Detalhamento: [FASE_05_CHAT_INTEGRADO.md](FASE_05_CHAT_INTEGRADO.md)
 - [ ] Histórico da conversa
 - [ ] Memória do projeto
 - [ ] Automação RPO Protheus (consulta)
-- [ ] MCP Server
+- [x] MCP Server (implementado em `mcp_server/`)
 - [ ] LangChain / RAG
 - [ ] Sugestão inteligente de projetos
+
+## Pós-estabilização *(Concluído)*
+
+- [x] `push()` e `pull()` com remote/branch explícitos
+- [x] `close_vscode()` filtrando por pasta do projeto
+- [x] `_load()` trata JSON corrompido silenciosamente
+- [x] `get_changed_files()` corrige paths de rename/copy
+- [x] Timestamp "Última sincronização" só atualiza em sync real
+- [x] MCP server sem dupla contagem (exclui `??`)
+- [x] `/commit <msg>` no chat
+- [x] `preferences.save()` com escrita atômica
+- [x] `CREATE_NO_WINDOW` em todos os subprocessos
+- [x] Skill `gestao-projetos` para opencode
 
 ## Fase 7 — Distribuição *(Prevista)*
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from typing import Callable, Optional
 
 from projetos import Projeto
@@ -124,20 +125,33 @@ class CommandExecutor:
         valid, error, status = self._validar_git(projeto)
         if not valid:
             return error
+
+        branch = self._git_service.get_current_branch(projeto.pasta)
         changed_files = self._git_service.get_changed_files(projeto.pasta)
+
         if changed_files:
             files = "\n".join(item.get("path", "") for item in changed_files)
             return (
-                "Existem alterações locais pendentes. Use o botão Encerrar atividade "
-                f"para selecionar os arquivos:\n{files}"
+                "Arquivos alterados:\n"
+                f"{files}\n\n"
+                'Para enviar, digite: /commit <mensagem do commit>\n'
+                "Para cancelar, digite /encerrar-projeto"
             )
-        branch = self._git_service.get_current_branch(projeto.pasta)
+
         if int(status["behind"]) > 0:
             return "Push bloqueado: o remoto avançou. Inicie a atividade para atualizar."
+
         if int(status["ahead"]) > 0:
+            ok, output = self._git_service.fetch(projeto.pasta)
+            if not ok:
+                return f"Falha no re-fetch: {output}"
+            status2 = self._git_service.get_branch_status(projeto.pasta)
+            if int(status2.get("behind", "1")) > 0:
+                return "O remoto avançou durante a operação. Tente novamente."
             ok, output = self._git_service.push(projeto.pasta, branch)
             if not ok:
                 return f"Falha no push: {output}"
+
         self._historico_service.registrar(
             "Git", f"Atividades encerradas via chat: {projeto.nome}"
         )
@@ -145,6 +159,41 @@ class CommandExecutor:
             f"Atividades encerradas para '{projeto.nome}'. "
             f"Branch '{branch}' sincronizada."
         )
+
+    def _executar_commit_chat(self, message: str) -> str:
+        projeto = self._context.current_project
+        if not projeto:
+            return "Nenhum projeto selecionado."
+        if not self._git_service.is_git_repo(projeto.pasta):
+            return f"O diretório de '{projeto.nome}' não é um repositório Git."
+        branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        if branch_error:
+            return branch_error
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if not changed_files:
+            return "Nenhum arquivo alterado para commit."
+
+        ok, output = self._git_service.stage_all(projeto.pasta)
+        if not ok:
+            return f"Erro ao preparar arquivos: {output}"
+        ok, output = self._git_service.commit(projeto.pasta, message)
+        if not ok:
+            return f"Erro no commit: {output}"
+        ok, output = self._git_service.fetch(projeto.pasta)
+        if not ok:
+            return f"Commit local realizado, mas o fetch falhou: {output}"
+        status = self._git_service.get_branch_status(projeto.pasta)
+        if int(status.get("behind", "1")) > 0:
+            return "Commit local realizado, mas o remoto avançou. Inicie a atividade para atualizar antes do push."
+        ok, output = self._git_service.push(projeto.pasta, branch)
+        if not ok:
+            return f"Commit local realizado, mas o push falhou: {output}"
+        self._historico_service.registrar(
+            "Git", f"Chat commit+push: {projeto.nome}: {message}"
+        )
+        return f"Commit e push realizados com sucesso para '{projeto.nome}'."
 
     def atualizar_documentacao_local(self, args: str) -> str:
         projeto = self._context.current_project
@@ -168,6 +217,31 @@ class CommandExecutor:
             f"Documentação local atualizada com sucesso para '{projeto.nome}'."
         )
 
+    def opencode(self, args: str) -> str:
+        projeto = self._context.current_project
+        pasta = projeto.pasta if projeto else None
+
+        import os
+        destino = pasta or os.getcwd()
+        try:
+            subprocess.Popen(
+                f'start "OpenCode - {projeto.nome if projeto else ""}" '
+                f'opencode "{destino}"',
+                shell=True,
+            )
+        except FileNotFoundError:
+            return (
+                "OpenCode não encontrado. "
+                "Abra um terminal e execute: opencode"
+            )
+        return (
+            "OpenCode iniciado para "
+            + (f"'{projeto.nome}'" if projeto else "o diretório atual")
+            + ".\n"
+            "Use o terminal do OpenCode para analisar código, "
+            "ver pendências ou refatorar."
+        )
+
     def ajuda(self, args: str) -> str:
         return (
             "Comandos disponíveis:\n\n"
@@ -179,8 +253,12 @@ class CommandExecutor:
             "  Encerra o projeto atual\n\n"
             "/encerrar-atividades\n"
             "  Encerra atividades com push\n\n"
+            "/commit <mensagem>\n"
+            "  Commita e envia todas as alterações do projeto atual\n\n"
             "/atualizar-documentacao-local\n"
             "  Pull do projeto atual\n\n"
+            "/opencode [pergunta]\n"
+            "  Abre o OpenCode para o projeto atual\n\n"
             "/ajuda\n"
             "  Exibe esta mensagem"
         )

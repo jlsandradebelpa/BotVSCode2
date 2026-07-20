@@ -42,7 +42,7 @@ app/
 ├── config.py            # Leitura da configuração (Config dataclass)
 ├── data_paths.py        # Migração e diretórios pessoais em APPDATA
 ├── app_state.py         # Estado persistente da interface
-├── preferences.py       # Persistência das preferências visuais
+├── preferences.py       # Persistência visual com escrita atômica (temp + replace)
 ├── projetos.py          # ProjetosManager + Projeto dataclass (CRUD)
 ├── menu.py              # Menu terminal (legado — mantido como referência)
 ├── git_tools.py         # Operações Git (GitTools)
@@ -50,6 +50,7 @@ app/
 ├── historico.py         # Histórico de atividades (+ listar)
 ├── vscode.py            # Controle VS Code (+ close_vscode)
 ├── utils.py             # Utilitários (saudacao, resolve_full_path)
+├── mcp_server/          # Servidor MCP JSON-RPC (6 ferramentas Git)
 ├── services/            # Camada de serviços
 │   ├── project_service.py
 │   ├── git_service.py
@@ -59,7 +60,7 @@ app/
 │   └── vscode_service.py
 └── ui/                  # Interface gráfica Flet
     ├── app.py           # Orquestrador principal (BotVSCode2App)
-    ├── tema.py          # Tema escuro
+    ├── tema.py          # Aplicação de tema (claro, escuro, sistema)
     ├── helpers.py       # Utilitários de UI
     ├── componentes/
     └── paginas/
@@ -82,8 +83,9 @@ app/
 
 #### git_tools.py
 - Classe `GitTools`: encapsula comandos Git via `subprocess`
-- Executa subprocessos sem shell e usa `schannel` no Windows
-- Oferece fetch com prune, `pull --ff-only`, upstream, conflitos, comparação de commits e staging seletivo
+- Executa subprocessos sem shell, usa `schannel` no Windows e `CREATE_NO_WINDOW` para evitar janela de console
+- `pull(remote, branch)` e `push(remote, branch)` usam remote e branch explícitos extraídos do upstream
+- Oferece fetch com prune, `pull --ff-only`, upstream, conflitos, comparação de commits, staging seletivo e listagem de alterações com `get_changed_files()`
 
 #### github_tools.py
 - `list_open_issues(repo)`: consulta GitHub Issues via CLI `gh` ou API REST
@@ -94,8 +96,8 @@ app/
 - `listar_arquivos(pasta)`: lista arquivos de histórico disponíveis
 
 #### vscode.py
-- `open_vscode(project_path)`: abre VS Code no diretório
-- `close_vscode(project_path)`: fecha VS Code via taskkill
+- `open_vscode(project_path)`: abre VS Code no diretório (com `CREATE_NO_WINDOW`)
+- `close_vscode(project_path)`: fecha VS Code filtrando por nome da pasta do projeto via `Get-CimInstance` (Windows) ou `pkill -f` (demais SO)
 - `is_vscode_installed()`: verifica se `code` está no PATH
 
 ### Services (Camada de Integração)
@@ -122,13 +124,15 @@ Cada Service é um **wrapper fino** que:
 - Mantém Iniciar/Encerrar Atividade na barra principal
 - Inicia a janela maximizada
 - Gerencia página ativa via `_mudar_aba()`
+- PopupMenuButton com Configurações, Sobre (versão) e Backlog (git log + GitHub issues)
+- Chat integrado com 7 comandos: `/selecionar-projeto`, `/encerrar-atividades`, `/commit <msg>`, `/pendencias`, `/atualizar-documentacao-local`, `/ajuda`
 - Barra de mensagens inferior
 
 #### páginas/inicio.py
 - Projeto atual (nome, pasta, branch)
 - Botões **Iniciar Atividade** e **Encerrar Atividade**
 - Status Git e VSCode
-- Última sincronização e última atividade
+- Última sincronização (timestamp só atualiza em sincronização real) e última atividade
 
 #### páginas/projetos.py
 - Lista de projetos carregada de `%APPDATA%/BotVsCode2/projetos.json`

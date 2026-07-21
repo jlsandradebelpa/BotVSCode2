@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from git_tools import GitTools
 from utils import resolve_full_path
@@ -57,6 +57,18 @@ class GitService:
             return False, "Caminho não encontrado."
         return git.status_short()
 
+    def get_changed_files(self, pasta: str) -> List[Dict[str, str]]:
+        git = self._get_git(pasta)
+        return git.get_changed_files() if git is not None else []
+
+    def has_conflicts(self, pasta: str) -> bool:
+        git = self._get_git(pasta)
+        return git is not None and git.has_conflicts()
+
+    def get_upstream(self, pasta: str) -> str:
+        git = self._get_git(pasta)
+        return git.get_upstream() if git is not None else ""
+
     def get_branch_status(self, pasta: str) -> Dict[str, str]:
         git = self._get_git(pasta)
         if git is None:
@@ -68,6 +80,12 @@ class GitService:
         if git is None:
             return False, "Caminho não encontrado."
         return git.pull(branch)
+
+    def stage_files(self, pasta: str, paths: Sequence[str]) -> Tuple[bool, str]:
+        git = self._get_git(pasta)
+        if git is None:
+            return False, "Caminho não encontrado."
+        return git.stage_files(paths)
 
     def stage_all(self, pasta: str) -> Tuple[bool, str]:
         git = self._get_git(pasta)

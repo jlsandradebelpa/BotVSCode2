@@ -23,9 +23,12 @@ class ProjetosManager:
         self._load()
 
     def _load(self) -> None:
-        with open(self._path, encoding="utf-8") as f:
-            data = json.load(f)
-        self._projetos = [Projeto(**item) for item in data]
+        try:
+            with open(self._path, encoding="utf-8") as f:
+                data = json.load(f)
+            self._projetos = [Projeto(**item) for item in data]
+        except (OSError, json.JSONDecodeError, TypeError, KeyError):
+            self._projetos = []
 
     def save(self) -> None:
         data = []

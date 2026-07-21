@@ -2,20 +2,46 @@
 
 > Assistente para preparação automática do ambiente de desenvolvimento — Interface Gráfica.
 
+## Governança para agentes de IA
+
+Antes de analisar ou alterar o projeto, leia obrigatoriamente:
+
+- [AGENTS.md](AGENTS.md) — regras de trabalho, issues e GitHub Project;
+- [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) — contexto mínimo e estável do projeto.
+
+Toda alteração relevante deve possuir uma issue vinculada no Project 9 antes da implementação.
+
 ## Descrição
 
 O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** utilizando **Flet**. Automatiza a preparação do ambiente de desenvolvimento: abrir VS Code, git pull/push/commit, registro de atividades e gerenciamento de projetos — tudo por uma interface visual intuitiva.
 
 ## Funcionalidades
 
-### Fase 2 — Interface Gráfica (atual)
-- Interface gráfica com Flet (Dark Theme)
-- Tela **Início**: projeto atual, status Git/VSCode, botões Iniciar/Encerrar atividade
-- Tela **Projetos**: CRUD completo (cadastro, edição, remoção) com persistência em JSON
+### Fase 3 — UX, Preferências e Fluxos (concluída)
+- Interface Flet iniciada maximizada
+- Ações **Iniciar/Encerrar Atividade** integradas à barra principal
+- Tela **Início**: projeto atual e status em layout expansível
+- Tela **Projetos**: CRUD, lista com rolagem e seleção explícita do projeto de trabalho
 - Tela **Atividades**: histórico diário em tabela (somente leitura)
-- Tela **Configurações**: placeholder preparado para Fase 3
+- Tela **Configurações**: informações técnicas do ambiente
+- Tela **Preferências**: tema, cor de destaque e fonte com persistência em JSON
+- Fluxos Git de início e encerramento com validação e mensagens de falha
+- Configurações pessoais, estado, histórico, logs e backups em `%APPDATA%\BotVsCode2`
+- Atualização somente por fast-forward (`git pull --ff-only`)
+- Validação explícita de branch configurada, branch atual e upstream
+- Seleção individual dos arquivos antes de commit e novo fetch antes do push
+- Backend de certificados `schannel` no Windows
 - Serviços desacoplados (camada Service entre UI e regras de negócio)
 - Backward compatible com `config/projetos.json` do BotVSCode original
+
+### Fase 5 — Chat Integrado (concluída)
+- Botão flutuante do chat no canto inferior direito com avatar
+- Painel deslizante que abre/fecha sem abrir nova janela
+- Campo de digitação com prefixo `>`
+- Sistema de comandos via `/` com autocomplete
+- 6 comandos registrados sem cadeia de IFs (CommandRegistry)
+- Contexto de sessão mantido em memória
+- Arquitetura em módulo `app/chat/` seguindo padrão de camadas
 
 ### Legado (Fase 1 — Núcleo)
 - Leitura de configuração (`config.json`)
@@ -32,12 +58,14 @@ O BotVSCode2 é a evolução do BotVSCode com **interface gráfica moderna** uti
 - Windows
 - Git instalado e acessível via PATH
 - VS Code com `code` no PATH (opcional)
+- Flet 0.85.x
 
 ## Instalação
 
 ```bash
 cd C:\projetos\botvscode2
-pip install flet
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
 ```
 
 ## Uso
@@ -48,13 +76,27 @@ python app/main.py
 
 Ou clique no atalho **BotVSCode2** na Área de Trabalho.
 
+## Fluxo Git operacional
+
+O desenvolvimento do BotVSCode2 ocorre em `devjlsa`. A branch `main`
+representa a versão estável e recebe alterações somente por Pull Request após
+validação. A tela Início exibe e valida a branch cadastrada para o projeto
+selecionado. As configurações pessoais ficam fora do Git, em
+`%APPDATA%\BotVsCode2`; os arquivos `config/*.default.json` contêm apenas os
+valores iniciais distribuídos com a aplicação.
+
+Nesta estação, ImpProtheusSOC, CBAA Asfaltos, BotVSCode e BotVSCode2 usam
+`devjlsa`. `candidato_cbaa` permanece cadastrado apenas como referência e não
+deve receber operações automatizadas enquanto não houver clone local validado.
+
 ## Estrutura do Projeto
 
 ```
 botvscode2/
 ├── app/
 │   ├── main.py              # Entry point Flet
-│   ├── config.py             # Configuração
+│   ├── config.py             # Configuração do ambiente
+│   ├── preferences.py        # Preferências visuais
 │   ├── projetos.py           # ProjetosManager com CRUD
 │   ├── menu.py               # Menu terminal (legado)
 │   ├── git_tools.py          # Operações Git
@@ -62,11 +104,18 @@ botvscode2/
 │   ├── historico.py          # Histórico de atividades
 │   ├── vscode.py             # Controle do VS Code
 │   ├── utils.py              # Utilitários
+│   ├── chat/                 # Chat integrado (Sprint 03)
+│   │   ├── chat_service.py
+│   │   ├── command_context.py
+│   │   ├── command_executor.py
+│   │   ├── command_parser.py
+│   │   └── command_registry.py
 │   ├── services/             # Camada de serviços
 │   │   ├── project_service.py
 │   │   ├── git_service.py
 │   │   ├── github_service.py
 │   │   ├── historico_service.py
+│   │   ├── preferences_service.py
 │   │   └── vscode_service.py
 │   └── ui/                   # Interface gráfica Flet
 │       ├── app.py            # Orquestrador
@@ -77,8 +126,10 @@ botvscode2/
 │           ├── inicio.py
 │           ├── projetos.py
 │           ├── atividades.py
-│           └── configuracoes.py
-├── config/                   # Configurações JSON
+│           ├── configuracoes.py
+│           └── preferencias.py
+├── assets/                   # Recursos visuais (avatar, etc.)
+├── config/                   # Configurações padrão versionadas
 ├── docs/                     # Documentação
 ├── logs/                     # Logs
 └── pyproject.toml
@@ -86,10 +137,17 @@ botvscode2/
 
 ## Documentação
 
+- [Regras para agentes de IA](AGENTS.md)
+- [Contexto estável do projeto](PROJECT_CONTEXT.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Arquitetura](docs/ARQUITETURA.md)
 - [Configuração do GitHub](docs/PROJECT_GITHUB.md)
+- [Fluxo de branches e promoção](docs/FLUXO_BRANCHES.md)
 - [Fase 2 — Interface Gráfica](docs/FASE_02.md)
+- [Fase 3 — UX, Preferências e Fluxos](docs/FASE_03_UX_FLUXOS.md)
+- [Sprint 03 — Chat Integrado](docs/FASE_05_CHAT_INTEGRADO.md)
+- [Plano oficial de estabilização](docs/PLANO_OFICIAL_ESTABILIZACAO_BOTVSCODE2.md)
+- [Relatório da estabilização](docs/RELATORIO_ESTABILIZACAO_2026-07-15.md)
 
 ## Licença
 

@@ -20,16 +20,56 @@
 - [x] Nenhuma regra de negócio alterada
 - [x] BotVSCode original intacto
 
-## Fase 3 — Assistente IA *(Prevista)*
+## Fase 3 — UX, Preferências e Fluxos *(Concluída)*
+
+- [x] Abrir a aplicação maximizada
+- [x] Integrar Iniciar/Encerrar Atividade à barra principal
+- [x] Remover a saudação e reaproveitar o espaço da tela Início
+- [x] Adicionar rolagem vertical à lista de projetos
+- [x] Adicionar seleção explícita de projeto durante a sessão
+- [x] Criar aba Preferências com tema, cor e fonte
+- [x] Tornar funcionais e verificáveis os fluxos Iniciar/Encerrar Atividade
+
+Detalhamento: [FASE_03_UX_FLUXOS.md](FASE_03_UX_FLUXOS.md)
+
+## Fase 5 — Chat Integrado *(Concluída)*
+
+- [x] Módulo `app/chat/` com arquitetura em camadas
+- [x] Botão flutuante do chat com avatar
+- [x] Painel deslizante (abrir/fechar sem nova janela)
+- [x] Campo de digitação com prefixo `>`
+- [x] Sistema de comandos via `/` com autocomplete
+- [x] CommandRegistry (sem cadeia de IFs)
+- [x] 7 comandos registrados (adicionado `/commit <mensagem>`)
+- [x] Contexto de sessão (projeto atual em memória)
+
+Detalhamento: [FASE_05_CHAT_INTEGRADO.md](FASE_05_CHAT_INTEGRADO.md)
+
+## Fase 6 — Assistente IA *(Prevista)*
 
 - [ ] Integração com IA (OpenAI, Gemini, Claude)
-- [ ] Chatbot embutido na interface
-- [ ] Automação RPO Protheus
-- [ ] MCP Server
+- [ ] Linguagem natural no chat
+- [ ] Histórico da conversa
+- [ ] Memória do projeto
+- [ ] Automação RPO Protheus (consulta)
+- [x] MCP Server (implementado em `mcp_server/`)
 - [ ] LangChain / RAG
 - [ ] Sugestão inteligente de projetos
 
-## Fase 4 — Distribuição *(Prevista)*
+## Pós-estabilização *(Concluído)*
+
+- [x] `push()` e `pull()` com remote/branch explícitos
+- [x] `close_vscode()` filtrando por pasta do projeto
+- [x] `_load()` trata JSON corrompido silenciosamente
+- [x] `get_changed_files()` corrige paths de rename/copy
+- [x] Timestamp "Última sincronização" só atualiza em sync real
+- [x] MCP server sem dupla contagem (exclui `??`)
+- [x] `/commit <msg>` no chat
+- [x] `preferences.save()` com escrita atômica
+- [x] `CREATE_NO_WINDOW` em todos os subprocessos
+- [x] Skill `gestao-projetos` para opencode
+
+## Fase 7 — Distribuição *(Prevista)*
 
 - [ ] Instalador do sistema
 - [ ] Empacotamento (PyInstaller)

@@ -2,14 +2,14 @@
   {
     "nome": "ImpProtheusSOC",
     "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/intprotheussoc",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "ADVPL",
     "github_repo": "jlsandradebelpa/intprotheussoc"
   },
   {
     "nome": "CBAA_Asfaltos_Empresa",
     "pasta": "TOTVS/Projetos/CBAA_ASFALTOS/cbaa_asfaltos_empresa",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "ADVPL",
     "github_repo": "jlsandradebelpa/CBAA_Asfaltos_Empresa"
   },
@@ -28,7 +28,7 @@
   {
     "nome": "BotVSCode",
     "pasta": "C:\\Projetos\\BotVSCode",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "Python",
     "github_repo": "jlsandradebelpa/botvscode"
   },
@@ -49,9 +49,8 @@
   {
     "nome": "BotVsCode2",
     "pasta": "C:\\projetos\\botvscode2",
-    "branch": "main",
+    "branch": "devjlsa",
     "linguagem": "Python",
-    "github_repo": "jlsandradebelpa/BotVSCode2",
-    "historico_pasta": "C:\\projetos\\historico_atividades"
+    "github_repo": "jlsandradebelpa/BotVSCode2"
   }
 ]

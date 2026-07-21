@@ -5,7 +5,22 @@
 - **URL**: https://github.com/jlsandradebelpa/BotVSCode2
 - **Visibilidade**: Público
 - **Branch padrão**: `main`
-- **Labels**: `enhancement`, `documentation`, `testing`, `chore`
+- **Labels de trabalho principais**: `bug`, `documentation`, `enhancement`,
+  `workflow`, `ui-ux`, `preferences`, `fase-3`
+
+## Política de branches
+
+- `main` é a branch oficial, protegida e representa a versão de produção.
+- `devjlsa` recebe commits e pushes durante desenvolvimento e testes.
+- A promoção para produção ocorre somente por Pull Request de `devjlsa` para
+  `main`.
+- Push direto, force-push e exclusão da `main` são bloqueados no GitHub.
+- O BotVSCode e o BotVSCode2 registram este projeto com a branch operacional
+  `devjlsa`.
+- As configurações operacionais também usam `devjlsa` para BotVSCode,
+  ImpProtheusSOC e CBAA Asfaltos.
+
+Detalhes: [Fluxo de branches e promoção](FLUXO_BRANCHES.md).
 
 ## GitHub Project
 
@@ -31,11 +46,15 @@
 
 ### Regras de fluxo
 
-1. Toda issue nova entra como **Pendente**.
-2. Ao iniciar a execução, mover para **Em andamento**.
-3. Ao finalizar e validar, mover para **Concluído**.
-4. Nenhuma issue deve ficar sem status definido.
-5. O quadro (View 2) é o controle visual oficial do andamento.
+1. Toda funcionalidade, correção, refatoração relevante, mudança de
+   comportamento, decisão técnica ou documentação estrutural deve possuir uma
+   issue antes da implementação.
+2. Toda issue nova entra como **Pendente**.
+3. Ao iniciar a execução, mover para **Em andamento**.
+4. Ao finalizar e validar, mover para **Concluído**.
+5. Nenhuma issue deve ficar sem status definido.
+6. O quadro (View 2) é o controle visual oficial do andamento.
+7. Agentes de IA devem cumprir também o `AGENTS.md` da raiz do repositório.
 
 ### Issues da Fase 2
 
@@ -60,4 +79,6 @@ ef7385e Adicionado seletor de pasta no campo Pasta Local
 
 ## Projeto Original
 
-O repositório original `jlsandradebelpa/botvscode` permanece congelado como baseline de referência.
+O repositório original `jlsandradebelpa/botvscode` permanece como aplicação de
+terminal e também adota `devjlsa` para desenvolvimento. Ele não deve ser tratado
+como congelado.

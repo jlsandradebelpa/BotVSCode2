@@ -2,6 +2,9 @@
 
 *Status: Planejada (não implementada)*
 
+> Os exemplos de cadastro preservam o contexto original. A branch operacional
+> deve ser lida da configuração atual; não use `main` automaticamente.
+
 ## Objetivo
 
 Permitir que o usuário defina onde os arquivos de histórico de atividades

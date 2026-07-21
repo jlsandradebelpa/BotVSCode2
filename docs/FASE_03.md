@@ -2,6 +2,10 @@
 
 *Status: Concluída*
 
+> Especificação histórica. Exemplos com `main` não substituem a configuração
+> operacional vigente: projetos ativos usam a branch cadastrada, atualmente
+> `devjlsa` para BotVSCode, BotVSCode2, CBAA Asfaltos e ImpProtheusSOC.
+
 ## Objetivo
 
 Atualizar o BotVSCode para que o próprio projeto **BotVSCode** faça parte da lista de projetos disponíveis para execução dos fluxos **Iniciar Trabalho** e **Encerrar Trabalho**.

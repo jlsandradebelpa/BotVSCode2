@@ -53,7 +53,7 @@ _FERRAMENTAS: dict[str, dict[str, Any]] = {
         },
     },
     "confirmar_push": {
-        "descricao": "Executa git push origin main. Exige confirmacao explicita do usuario.",
+        "descricao": "Executa git push no remote e branch configurados. Exige confirmacao explicita do usuario.",
         "parametros": {
             "type": "object",
             "properties": {
@@ -66,7 +66,7 @@ _FERRAMENTAS: dict[str, dict[str, Any]] = {
         },
     },
     "git_pull_projeto": {
-        "descricao": "Executa git pull origin main no projeto. Valida branch e remote.",
+        "descricao": "Executa git pull no remote e branch configurados. Valida branch e remote.",
         "parametros": {
             "type": "object",
             "properties": {

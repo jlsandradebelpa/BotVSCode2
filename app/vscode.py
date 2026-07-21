@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -13,13 +14,13 @@ def open_vscode(project_path: Path) -> bool:
     if not is_vscode_installed():
         return False
     try:
-        result = subprocess.run(
+        kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+        subprocess.Popen(
             ["code", "."],
             cwd=str(project_path),
-            capture_output=True,
-            text=True,
+            **kwargs,
         )
-        return result.returncode == 0
+        return True
     except FileNotFoundError:
         return False
     except Exception:
@@ -28,17 +29,19 @@ def open_vscode(project_path: Path) -> bool:
 
 def close_vscode(project_path: Path) -> bool:
     import platform
-    import signal
 
     sistema = platform.system()
     try:
         nome_pasta = project_path.resolve().name
+        kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
         if sistema == "Windows":
-            result = subprocess.run(
-                ["taskkill", "/F", "/IM", "Code.exe"],
-                capture_output=True,
-                text=True,
-            )
+            cmd = [
+                "powershell", "-NoProfile", "-Command",
+                f"Get-CimInstance Win32_Process -Filter \"Name='Code.exe'\" | "
+                f"Where-Object {{ $_.CommandLine -like '*{nome_pasta}*' }} | "
+                f"ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force }}",
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, **kwargs)
             return result.returncode == 0
         else:
             result = subprocess.run(

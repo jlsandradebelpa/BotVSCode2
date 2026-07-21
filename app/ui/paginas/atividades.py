@@ -36,10 +36,10 @@ class AtividadesPage:
                 ft.DataColumn(ft.Text("Descricao", weight=ft.FontWeight.BOLD)),
             ],
             rows=linhas,
-            border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),
+            border=ft.Border(left=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), top=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), right=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), bottom=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT)),
             border_radius=8,
-            heading_row_color=ft.Colors.GREY_800,
-            data_row_color=ft.Colors.GREY_900,
+            heading_row_color=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+            data_row_color=ft.Colors.SURFACE_CONTAINER,
         )
 
         return ft.Column([
@@ -48,9 +48,9 @@ class AtividadesPage:
             ft.Container(height=16),
             ft.Container(
                 content=ft.Column([tabela], scroll=ft.ScrollMode.AUTO),
-                border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),
+                border=ft.Border(left=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), top=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), right=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT), bottom=ft.BorderSide(1, ft.Colors.OUTLINE_VARIANT)),
                 border_radius=8,
-                bgcolor=ft.Colors.GREY_800,
+                bgcolor=ft.Colors.SURFACE_CONTAINER,
                 padding=ft.Padding(left=16, top=16, right=16, bottom=16),
             ),
         ], scroll=ft.ScrollMode.AUTO)

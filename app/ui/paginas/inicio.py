@@ -10,7 +10,6 @@ from services.git_service import GitService
 from services.github_service import GitHubService
 from services.historico_service import HistoricoService
 from services.vscode_service import VSCodeService
-from utils import saudacao
 
 
 class InicioPage:
@@ -29,6 +28,9 @@ class InicioPage:
         self._workspace_drive = workspace_drive
         self._projeto_atual: Optional[Projeto] = None
         self._on_mensagem: Callable[[str], None] = lambda msg: None
+        self._commit_field: Optional[ft.TextField] = None
+        self._file_checkboxes: list[ft.Checkbox] = []
+        self._selected_files: list[str] = []
 
     def definir_on_mensagem(self, callback: Callable[[str], None]) -> None:
         self._on_mensagem = callback
@@ -38,134 +40,121 @@ class InicioPage:
 
     def definir_projeto(self, projeto: Optional[Projeto]) -> None:
         self._projeto_atual = projeto
-        if hasattr(self, "_txt_nome") and hasattr(self, "_txt_pasta") and hasattr(self, "_txt_branch"):
-            if projeto:
-                self._txt_nome.value = projeto.nome
-                caminho = self._git_service.get_caminho(projeto.pasta)
-                self._txt_pasta.value = str(caminho) if caminho else projeto.pasta
-                self._txt_branch.value = projeto.branch
-            else:
-                self._txt_nome.value = "Nenhum projeto selecionado"
-                self._txt_pasta.value = ""
-                self._txt_branch.value = ""
-            self._atualizar()
+        if not hasattr(self, "_txt_nome"):
+            return
 
-    def _atualizar(self) -> None:
-        if hasattr(self, "_txt_status_git"):
-            if self._projeto_atual:
-                branch = self._git_service.get_current_branch(self._projeto_atual.pasta)
-                status = self._git_service.get_branch_status(self._projeto_atual.pasta)
-                self._txt_status_git.value = (
-                    f"Branch: {branch or '---'} | "
-                    f"Local: {status.get('ahead', '?')} | "
-                    f"Remoto: {status.get('behind', '?')}"
-                )
-                if self._vscode_service.installed():
-                    self._txt_status_vscode.value = "VS Code instalado"
-                    self._txt_status_vscode.color = ft.Colors.GREEN
-                else:
-                    self._txt_status_vscode.value = "VS Code não encontrado"
-                    self._txt_status_vscode.color = ft.Colors.ORANGE
+        if projeto:
+            self._txt_nome.value = projeto.nome
+            caminho = self._git_service.get_caminho(projeto.pasta)
+            self._txt_pasta.value = str(caminho) if caminho else projeto.pasta
+            self._txt_branch.value = projeto.branch
+        else:
+            self._txt_nome.value = "Nenhum projeto selecionado"
+            self._txt_pasta.value = "Selecione um projeto na aba Projetos."
+            self._txt_branch.value = ""
+        self._atualizar()
+
+    def _atualizar(self, sincronizado: bool = False) -> None:
+        if not hasattr(self, "_txt_status_git"):
+            return
+
+        if self._projeto_atual:
+            branch = self._git_service.get_current_branch(self._projeto_atual.pasta)
+            status = self._git_service.get_branch_status(self._projeto_atual.pasta)
+            self._txt_status_git.value = (
+                f"Branch: {branch or '---'} | "
+                f"À frente: {status.get('ahead', '?')} | "
+                f"Atrás: {status.get('behind', '?')}"
+            )
+            if self._vscode_service.installed():
+                self._txt_status_vscode.value = "VS Code instalado"
+                self._txt_status_vscode.color = ft.Colors.GREEN
             else:
-                self._txt_status_git.value = "---"
-                self._txt_status_vscode.value = "---"
+                self._txt_status_vscode.value = "VS Code não encontrado"
+                self._txt_status_vscode.color = ft.Colors.ORANGE
+            historico = self._historico_service.listar()
+            self._txt_ultima_ativ.value = (
+                f"{historico[-1].get('hora', '')} - {historico[-1].get('descricao', '')}"
+                if historico
+                else "Nenhuma atividade registrada hoje."
+            )
+        else:
+            self._txt_status_git.value = "---"
+            self._txt_status_vscode.value = "---"
+            self._txt_ultima_ativ.value = "---"
+
+        if sincronizado:
             self._txt_ultima_sinc.value = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-            if self._projeto_atual:
-                hist = self._historico_service.listar()
-                if hist:
-                    self._txt_ultima_ativ.value = f"{hist[-1].get('hora', '')} - {hist[-1].get('descricao', '')}"
-                else:
-                    self._txt_ultima_ativ.value = "Nenhuma atividade registrada hoje."
-            else:
-                self._txt_ultima_ativ.value = "---"
+        try:
+            if self._txt_status_git.page:
+                self._txt_status_git.page.update()
+        except RuntimeError:
+            pass
 
     def construir(self) -> ft.Control:
-        self._txt_nome = ft.Text("Nenhum projeto selecionado", size=16, weight=ft.FontWeight.BOLD)
-        self._txt_pasta = ft.Text("", size=13, color=ft.Colors.GREY_400)
-        self._txt_branch = ft.Text("", size=13, color=ft.Colors.GREY_400)
-
-        self._txt_status_git = ft.Text("---", size=13)
+        self._txt_nome = ft.Text(
+            "Nenhum projeto selecionado", size=16, weight=ft.FontWeight.BOLD
+        )
+        self._txt_pasta = ft.Text(
+            "Selecione um projeto na aba Projetos.",
+            size=13,
+            color=ft.Colors.GREY_500,
+            selectable=True,
+        )
+        self._txt_branch = ft.Text("", size=13, color=ft.Colors.GREY_500)
+        self._txt_status_git = ft.Text("---", size=13, selectable=True)
         self._txt_status_vscode = ft.Text("---", size=13)
         self._txt_ultima_sinc = ft.Text("---", size=13)
-        self._txt_ultima_ativ = ft.Text("---", size=13)
-
-        btn_iniciar = ft.ElevatedButton(
-            "INICIAR ATIVIDADE",
-            icon=ft.Icons.PLAY_ARROW,
-            color=ft.Colors.WHITE,
-            bgcolor=ft.Colors.GREEN_700,
-            style=ft.ButtonStyle(padding=ft.Padding(left=16, top=16, right=16, bottom=16)),
-            on_click=self._ao_clicar_iniciar,
-        )
-
-        btn_encerrar = ft.ElevatedButton(
-            "ENCERRAR ATIVIDADE",
-            icon=ft.Icons.STOP,
-            color=ft.Colors.WHITE,
-            bgcolor=ft.Colors.RED_700,
-            style=ft.ButtonStyle(padding=ft.Padding(left=16, top=16, right=16, bottom=16)),
-            on_click=self._ao_clicar_encerrar,
-        )
+        self._txt_ultima_ativ = ft.Text("---", size=13, selectable=True)
 
         projeto_card = ft.Container(
             content=ft.Column([
                 ft.Text("Projeto Atual", size=18, weight=ft.FontWeight.BOLD),
-                ft.Divider(height=1, color=ft.Colors.GREY_700),
-                ft.Row([
-                    ft.Column([ft.Text("Nome", weight=ft.FontWeight.BOLD, size=13), self._txt_nome], expand=True),
-                ]),
-                ft.Row([
-                    ft.Column([ft.Text("Pasta", weight=ft.FontWeight.BOLD, size=13), self._txt_pasta], expand=True),
-                ]),
-                ft.Row([
-                    ft.Column([ft.Text("Branch", weight=ft.FontWeight.BOLD, size=13), self._txt_branch], expand=True),
-                ]),
+                ft.Divider(height=1, color=ft.Colors.OUTLINE_VARIANT),
+                ft.Text("Nome", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_nome,
+                ft.Text("Pasta", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_pasta,
+                ft.Text("Branch", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_branch,
             ]),
-            padding=ft.Padding(left=16, top=16, right=16, bottom=16),
-            border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),
+            padding=16,
+            border=ft.Border.all(1, ft.Colors.OUTLINE_VARIANT),
             border_radius=8,
-            bgcolor=ft.Colors.GREY_800,
-        )
-
-        botoes_card = ft.Container(
-            content=ft.Column([
-                btn_iniciar,
-                ft.Container(height=10),
-                btn_encerrar,
-            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=ft.Padding(left=16, top=16, right=16, bottom=16),
-            border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),
-            border_radius=8,
-            bgcolor=ft.Colors.GREY_800,
+            bgcolor=ft.Colors.SURFACE_CONTAINER,
+            col={"sm": 12, "md": 6},
         )
 
         status_card = ft.Container(
             content=ft.Column([
                 ft.Text("Status", size=18, weight=ft.FontWeight.BOLD),
-                ft.Divider(height=1, color=ft.Colors.GREY_700),
-                ft.Row([ft.Text("Git:", weight=ft.FontWeight.BOLD, size=13), self._txt_status_git]),
-                ft.Row([ft.Text("VSCode:", weight=ft.FontWeight.BOLD, size=13), self._txt_status_vscode]),
-                ft.Divider(height=1, color=ft.Colors.GREY_700),
-                ft.Row([ft.Text("Última sincronização:", weight=ft.FontWeight.BOLD, size=13), self._txt_ultima_sinc]),
-                ft.Row([ft.Text("Última atividade:", weight=ft.FontWeight.BOLD, size=13), self._txt_ultima_ativ]),
+                ft.Divider(height=1, color=ft.Colors.OUTLINE_VARIANT),
+                ft.Text("Git", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_status_git,
+                ft.Text("VS Code", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_status_vscode,
+                ft.Divider(height=1, color=ft.Colors.OUTLINE_VARIANT),
+                ft.Text("Última sincronização", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_ultima_sinc,
+                ft.Text("Última atividade", weight=ft.FontWeight.BOLD, size=13),
+                self._txt_ultima_ativ,
             ]),
-            padding=ft.Padding(left=16, top=16, right=16, bottom=16),
-            border=ft.Border(left=ft.BorderSide(1, ft.Colors.GREY_700), top=ft.BorderSide(1, ft.Colors.GREY_700), right=ft.BorderSide(1, ft.Colors.GREY_700), bottom=ft.BorderSide(1, ft.Colors.GREY_700)),
+            padding=16,
+            border=ft.Border.all(1, ft.Colors.OUTLINE_VARIANT),
             border_radius=8,
-            bgcolor=ft.Colors.GREY_800,
+            bgcolor=ft.Colors.SURFACE_CONTAINER,
+            col={"sm": 12, "md": 6},
         )
 
         return ft.Column([
-            ft.Text(saudacao(), size=24, weight=ft.FontWeight.BOLD),
-            ft.Container(height=16),
-            projeto_card,
-            ft.Container(height=16),
-            botoes_card,
-            ft.Container(height=16),
-            status_card,
-        ], scroll=ft.ScrollMode.AUTO)
+            ft.ResponsiveRow(
+                [projeto_card, status_card],
+                spacing=16,
+                run_spacing=16,
+            ),
+        ], scroll=ft.ScrollMode.AUTO, expand=True)
 
-    def _ao_clicar_iniciar(self, e: ft.ControlEvent) -> None:
+    def iniciar_atividade(self, e: ft.ControlEvent) -> None:
         if not self._projeto_atual:
             self._mensagem("Selecione um projeto na aba Projetos antes de iniciar.")
             return
@@ -175,139 +164,333 @@ class InicioPage:
 
         caminho = self._git_service.get_caminho(projeto.pasta)
         if not caminho:
-            self._mensagem(f"ERRO: Caminho não encontrado: {projeto.pasta}")
+            self._mensagem(f"ERRO: caminho não encontrado: {projeto.pasta}")
             return
-
         if not self._git_service.is_git_repo(projeto.pasta):
-            self._mensagem("AVISO: O diretório não é um repositório Git.")
+            self._mensagem("ERRO: o diretório não é um repositório Git.")
             return
 
-        self._mensagem("Repositório Git encontrado.")
-
-        success, _ = self._git_service.fetch(projeto.pasta)
+        success, output = self._git_service.fetch(projeto.pasta)
         if not success:
-            self._mensagem("AVISO: Não foi possível conectar ao repositório remoto.")
-        else:
-            self._mensagem("Fetch realizado com sucesso.")
+            self._mensagem(f"Falha no fetch: {output}")
+            return
+
+        branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        if branch_error:
+            self._mensagem(branch_error)
+            return
+
+        if self._git_service.has_conflicts(projeto.pasta):
+            self._mensagem("BLOQUEADO: existem conflitos Git não resolvidos no projeto.")
+            return
 
         status = self._git_service.get_branch_status(projeto.pasta)
-        branch = self._git_service.get_current_branch(projeto.pasta)
-        behind = status.get("behind", "0")
+        ahead = self._numero_status(status.get("ahead", "?"))
+        behind = self._numero_status(status.get("behind", "?"))
+        if ahead is None or behind is None:
+            self._mensagem("BLOQUEADO: não foi possível comparar a branch local com o upstream.")
+            return
+        if ahead > 0 and behind > 0:
+            self._mensagem(
+                f"BLOQUEADO: branch divergente. Local à frente: {ahead}; atrás: {behind}."
+            )
+            return
 
-        if behind not in ("0", "?"):
-            self._mensagem("Atualizando projeto (git pull)...")
-            ok, out = self._git_service.pull(projeto.pasta, branch)
-            if ok:
-                self._mensagem(f"Pull realizado: {out}")
-            else:
-                self._mensagem(f"Falha no pull: {out}")
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        tracked_changes = [f for f in changed_files if not f.get("status", "").startswith("??")]
+        if tracked_changes:
+            self._mostrar_alteracoes_inicio(e, projeto, branch, upstream, status, changed_files)
+            return
 
-        if self._vscode_service.installed():
-            if projeto.nome:
-                if self._vscode_service.abrir(projeto.pasta):
-                    self._mensagem("VS Code aberto com sucesso.")
-                else:
-                    self._mensagem("Falha ao abrir VS Code.")
+        if behind > 0:
+            ok, output = self._git_service.pull(projeto.pasta, branch)
+            if not ok:
+                self._mensagem(f"Falha no pull --ff-only: {output}")
+                return
 
-        self._historico_service.registrar("Git", f"Projeto iniciado e sincronizado: {projeto.nome}")
-        self._mensagem(f"{saudacao()} Ambiente pronto para desenvolvimento!")
-        self._atualizar()
+        self._abrir_sessao(projeto)
 
-    def _ao_clicar_encerrar(self, e: ft.ControlEvent) -> None:
+    @staticmethod
+    def _numero_status(value: str) -> Optional[int]:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _validar_branch(projeto: Projeto, branch: str, upstream: str) -> str:
+        details = (
+            f"Configurada: {projeto.branch or '---'} | "
+            f"Atual: {branch or '---'} | Upstream: {upstream or '---'}"
+        )
+        if not branch:
+            return f"BLOQUEADO: branch atual não identificada. {details}"
+        if branch != projeto.branch:
+            return f"BLOQUEADO: branch incorreta. {details}"
+        if not upstream:
+            return f"BLOQUEADO: branch sem upstream. {details}"
+        upstream_branch = upstream.split("/", 1)[-1]
+        if upstream_branch != branch:
+            return f"BLOQUEADO: upstream não corresponde à branch atual. {details}"
+        return ""
+
+    @staticmethod
+    def _formatar_arquivos(files: list[dict]) -> str:
+        return "\n".join(
+            f"{item.get('status', '??')}  {item.get('path', '')}" for item in files
+        )
+
+    def _mostrar_alteracoes_inicio(
+        self,
+        e: ft.ControlEvent,
+        projeto: Projeto,
+        branch: str,
+        upstream: str,
+        status: dict,
+        files: list[dict],
+    ) -> None:
+        texto = (
+            f"Branch atual: {branch}\n"
+            f"Upstream: {upstream}\n"
+            f"Commits à frente: {status.get('ahead', '?')}\n"
+            f"Commits atrás: {status.get('behind', '?')}\n\n"
+            f"Arquivos modificados:\n{self._formatar_arquivos(files)}\n\n"
+            "O pull não será executado. Deseja abrir a sessão mantendo essas alterações?"
+        )
+        dialog = ft.AlertDialog(
+            title=ft.Text("Alterações locais encontradas"),
+            content=ft.Container(content=ft.Text(texto, selectable=True), width=620),
+            actions=[
+                ft.TextButton(
+                    "Abrir sem atualizar",
+                    on_click=lambda event: self._confirmar_abertura_sem_pull(event, projeto),
+                ),
+                ft.TextButton("Cancelar", on_click=self._cancelar_inicio),
+            ],
+        )
+        e.page.show_dialog(dialog)
+        self._mensagem("Alterações locais encontradas. Pull bloqueado; escolha como continuar.")
+
+    def _confirmar_abertura_sem_pull(self, e: ft.ControlEvent, projeto: Projeto) -> None:
+        e.page.pop_dialog()
+        self._abrir_sessao(projeto, " Pull não executado devido a alterações locais.")
+
+    def _cancelar_inicio(self, e: ft.ControlEvent) -> None:
+        e.page.pop_dialog()
+        self._mensagem("Início da atividade cancelado; nenhuma alteração foi descartada.")
+
+    def _abrir_sessao(self, projeto: Projeto, observacao: str = "") -> None:
+
+        if not self._vscode_service.installed():
+            self._mensagem("VS Code não encontrado no PATH.")
+            return
+        if not self._vscode_service.abrir(projeto.pasta):
+            self._mensagem("Falha ao abrir VS Code.")
+            return
+
+        self._historico_service.registrar(
+            "Git", f"Projeto iniciado: {projeto.nome}.{observacao}"
+        )
+        self._mensagem(f"Atividade iniciada. Ambiente de {projeto.nome} pronto.{observacao}")
+        self._atualizar(sincronizado=True)
+
+    def encerrar_atividade(self, e: ft.ControlEvent) -> None:
         if not self._projeto_atual:
             self._mensagem("Selecione um projeto na aba Projetos antes de encerrar.")
             return
 
         projeto = self._projeto_atual
-        self._mensagem(f"Encerrando atividade para {projeto.nome}...")
-
         caminho = self._git_service.get_caminho(projeto.pasta)
         if not caminho:
-            self._mensagem(f"ERRO: Caminho não encontrado: {projeto.pasta}")
+            self._mensagem(f"ERRO: caminho não encontrado: {projeto.pasta}")
             return
-
         if not self._git_service.is_git_repo(projeto.pasta):
-            self._mensagem("AVISO: O diretório não é um repositório Git.")
+            self._mensagem("ERRO: o diretório não é um repositório Git.")
             return
 
-        has_changes = self._git_service.has_uncommitted_changes(projeto.pasta)
-        if not has_changes:
-            branch = self._git_service.get_current_branch(projeto.pasta)
-            ok, out = self._git_service.push(projeto.pasta, branch)
-            if ok:
-                self._historico_service.registrar("Git", f"Trabalho encerrado: {projeto.nome} sincronizado (sem alterações)")
-                self._mensagem(f"Push realizado. Branch {branch} sincronizada.")
+        success, output = self._git_service.fetch(projeto.pasta)
+        if not success:
+            self._mensagem(f"Falha no fetch antes do encerramento: {output}")
+            return
+
+        branch = self._git_service.get_current_branch(projeto.pasta)
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        if branch_error:
+            self._mensagem(branch_error)
+            return
+        if self._git_service.has_conflicts(projeto.pasta):
+            self._mensagem("BLOQUEADO: resolva os conflitos Git antes de encerrar.")
+            return
+
+        status = self._git_service.get_branch_status(projeto.pasta)
+        ahead = self._numero_status(status.get("ahead", "?"))
+        behind = self._numero_status(status.get("behind", "?"))
+        if ahead is None or behind is None:
+            self._mensagem("BLOQUEADO: não foi possível comparar a branch com o upstream.")
+            return
+        if behind > 0:
+            self._mensagem(
+                f"BLOQUEADO: o remoto avançou {behind} commit(s). Atualize com segurança antes do push."
+            )
+            return
+
+        changed_files = self._git_service.get_changed_files(projeto.pasta)
+        if not changed_files:
+            if ahead > 0:
+                ok, output = self._git_service.push(projeto.pasta, branch)
             else:
-                self._mensagem(f"Falha no push: {out}")
-            self._atualizar()
+                ok, output = True, "Branch já sincronizada."
+            if not ok:
+                self._mensagem(f"Falha no push: {output}")
+                return
+            self._historico_service.registrar(
+                "Git", f"Trabalho encerrado: {projeto.nome} sincronizado (sem alterações)"
+            )
+            if self._vscode_service.installed():
+                self._vscode_service.fechar(projeto.pasta)
+            self._mensagem(f"Atividade encerrada. Branch {branch} sincronizada.")
+            self._atualizar(sincronizado=True)
             return
 
-        self._mensagem("Alterações locais encontradas.")
-        dlg = ft.AlertDialog(
-            title=ft.Text("Commit e Push"),
-            content=ft.Text("Deseja commitar e enviar as alterações?"),
+        self._mostrar_selecao_arquivos(e, changed_files)
+
+    def _mostrar_selecao_arquivos(self, e: ft.ControlEvent, files: list[dict]) -> None:
+        self._file_checkboxes = [
+            ft.Checkbox(
+                label=f"{item.get('status', '??')}  {item.get('path', '')}",
+                value=False,
+                data=item.get("path", ""),
+            )
+            for item in files
+        ]
+
+        def _toggle_all(_):
+            nova = not all(cb.value for cb in self._file_checkboxes)
+            for cb in self._file_checkboxes:
+                cb.value = nova
+                cb.update()
+
+        dialog = ft.AlertDialog(
+            title=ft.Text("Selecionar arquivos para o commit"),
+            content=ft.Container(
+                content=ft.Column(
+                    self._file_checkboxes,
+                    scroll=ft.ScrollMode.AUTO,
+                    spacing=8,
+                ),
+                width=650,
+                height=min(420, max(120, len(files) * 48)),
+            ),
             actions=[
-                ft.TextButton("Sim", on_click=lambda ev: self._confirmar_commit(ev)),
-                ft.TextButton("Não", on_click=lambda ev: self._cancelar_commit(ev)),
+                ft.TextButton("Marcar/Desmarcar todas", on_click=_toggle_all),
+                ft.TextButton("Continuar", on_click=self._confirmar_selecao),
+                ft.TextButton("Cancelar", on_click=self._cancelar_commit),
             ],
         )
-        e.page.show_dialog(dlg)
+        e.page.show_dialog(dialog)
+        self._mensagem("Selecione explicitamente os arquivos que deverão entrar no commit.")
 
-    def _confirmar_commit(self, e: ft.ControlEvent) -> None:
-        projeto = self._projeto_atual
-        if not projeto:
+    def _confirmar_selecao(self, e: ft.ControlEvent) -> None:
+        if not self._projeto_atual:
+            return
+        self._selected_files = [
+            str(checkbox.data)
+            for checkbox in self._file_checkboxes
+            if checkbox.value and checkbox.data
+        ]
+        if not self._selected_files:
+            self._mensagem("Selecione pelo menos um arquivo antes de continuar.")
             return
         e.page.pop_dialog()
-
-        dlg = ft.AlertDialog(
-            title=ft.Text("Mensagem do Commit"),
-            content=ft.TextField(hint_text="Digite a mensagem do commit...", multiline=False),
+        self._commit_field = ft.TextField(
+            label="Mensagem do commit",
+            value=(
+                f"Atualiza {self._projeto_atual.nome} - "
+                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            ),
+            multiline=False,
+            autofocus=True,
+        )
+        arquivos = "\n".join(self._selected_files)
+        dialog = ft.AlertDialog(
+            title=ft.Text("Confirmar commit"),
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Text("Arquivos selecionados:", weight=ft.FontWeight.BOLD),
+                    ft.Text(arquivos, selectable=True),
+                    self._commit_field,
+                ]),
+                width=650,
+            ),
             actions=[
-                ft.TextButton("Confirmar", on_click=lambda ev: self._executar_commit(ev)),
-                ft.TextButton("Cancelar", on_click=lambda ev: ev.control.page.pop_dialog()),
+                ft.TextButton("Confirmar commit e push", on_click=self._executar_commit),
+                ft.TextButton("Cancelar", on_click=lambda ev: ev.page.pop_dialog()),
             ],
         )
-        e.page.show_dialog(dlg)
+        e.page.show_dialog(dialog)
 
     def _executar_commit(self, e: ft.ControlEvent) -> None:
         projeto = self._projeto_atual
-        if not projeto:
+        if not projeto or not self._commit_field:
             return
-        dialog = e.control.parent
-        text_field = dialog.content
-        msg = text_field.value.strip() if text_field else ""
+        message = (self._commit_field.value or "").strip()
+        if not message:
+            self._mensagem("A mensagem do commit não pode estar vazia.")
+            return
         e.page.pop_dialog()
 
-        if not msg:
-            self._mensagem("Mensagem do commit não pode estar vazia.")
+        ok, output = self._git_service.stage_files(projeto.pasta, self._selected_files)
+        if not ok:
+            self._mensagem(f"Erro ao preparar arquivos: {output}")
+            return
+        ok, output = self._git_service.commit(projeto.pasta, message)
+        if not ok:
+            self._mensagem(f"Erro no commit: {output}")
             return
 
-        ok_stage, out_stage = self._git_service.stage_all(projeto.pasta)
-        if not ok_stage:
-            self._mensagem(f"Erro ao preparar arquivos: {out_stage}")
+        ok, output = self._git_service.fetch(projeto.pasta)
+        if not ok:
+            self._historico_service.registrar(
+                "Git", f"Commit local em {projeto.nome}; fetch antes do push falhou: {message}"
+            )
+            self._mensagem(f"Commit local realizado, mas o fetch antes do push falhou: {output}")
+            self._atualizar()
             return
-
-        ok_commit, out_commit = self._git_service.commit(projeto.pasta, msg)
-        if not ok_commit:
-            self._mensagem(f"Erro no commit: {out_commit}")
-            return
-
-        self._historico_service.registrar("Git", f"Commit realizado em {projeto.nome}: {msg}")
-        self._mensagem("Commit realizado com sucesso.")
 
         branch = self._git_service.get_current_branch(projeto.pasta)
-        ok_push, out_push = self._git_service.push(projeto.pasta, branch)
-        if ok_push:
-            self._historico_service.registrar("Git", f"Trabalho encerrado: {projeto.nome} commitado e enviado")
-            self._mensagem("Push realizado com sucesso. Projeto sincronizado com o GitHub.")
-        else:
-            self._mensagem(f"Falha no push: {out_push}")
+        upstream = self._git_service.get_upstream(projeto.pasta)
+        branch_error = self._validar_branch(projeto, branch, upstream)
+        status = self._git_service.get_branch_status(projeto.pasta)
+        behind = self._numero_status(status.get("behind", "?"))
+        if branch_error or behind is None or behind > 0:
+            detalhe = branch_error or f"O remoto avançou {behind} commit(s)."
+            self._historico_service.registrar(
+                "Git", f"Commit local em {projeto.nome}; push bloqueado: {message}"
+            )
+            self._mensagem(f"Commit local realizado, mas o push foi bloqueado. {detalhe}")
+            self._atualizar()
+            return
 
+        ok, output = self._git_service.push(projeto.pasta, branch)
+        if not ok:
+            self._historico_service.registrar(
+                "Git", f"Commit local em {projeto.nome}, mas push falhou: {message}"
+            )
+            self._mensagem(f"Commit realizado, mas o push falhou: {output}")
+            self._atualizar()
+            return
+
+        self._historico_service.registrar(
+            "Git", f"Trabalho encerrado: {projeto.nome} commitado e enviado: {message}"
+        )
         if self._vscode_service.installed():
             self._vscode_service.fechar(projeto.pasta)
-
-        self._atualizar()
+        self._mensagem("Atividade encerrada. Commit e push realizados com sucesso.")
+        self._atualizar(sincronizado=True)
 
     def _cancelar_commit(self, e: ft.ControlEvent) -> None:
         e.page.pop_dialog()
-        self._mensagem("Alterações não foram enviadas.")
+        self._mensagem("Alterações não enviadas; encerramento cancelado.")

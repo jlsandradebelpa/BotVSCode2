@@ -7,7 +7,7 @@
         "D:\\TOTVS\\Projetos\\CBAA_ASFALTOS\\intprotheussoc",
         "E:\\Totvs\\Projetos\\CBAA_ASFALTOS\\intprotheussoc"
       ],
-      "branch_padrao": "main",
+      "branch_padrao": "devjlsa",
       "remote": "origin"
     },
     {
@@ -15,7 +15,7 @@
       "caminhos_possiveis": [
         "D:\\TOTVS\\Projetos\\CBAA_ASFALTOS\\cbaa_asfaltos_empresa"
       ],
-      "branch_padrao": "main",
+      "branch_padrao": "devjlsa",
       "remote": "origin"
     },
     {
@@ -23,7 +23,15 @@
       "caminhos_possiveis": [
         "C:\\Projetos\\botvscode"
       ],
-      "branch_padrao": "main",
+      "branch_padrao": "devjlsa",
+      "remote": "origin"
+    },
+    {
+      "nome": "botvscode2",
+      "caminhos_possiveis": [
+        "C:\\Projetos\\BotVsCode2"
+      ],
+      "branch_padrao": "devjlsa",
       "remote": "origin"
     },
     {

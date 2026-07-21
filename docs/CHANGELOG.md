@@ -19,6 +19,8 @@
 15. Melhoria: skill `gestao-projetos` para OpenCode
 16. Melhoria: diálogo "Selecionar arquivos" com espaçamento entre itens e botão Marcar/Desmarcar todas
 17. Documentação: `docs/CHANGELOG.md` criado
-18. Documentação: `docs/ARQUITETURA.md`, `FASE_02.md`, `FASE_03_UX_FLUXOS.md`,
+18. Melhoria: skills `advpl-tlpp`, `angular-po-ui`, `fluig`, `python` criadas globalmente
+19. Melhoria: `.opencode/AGENTS.md` criado em todos os 7 projetos com linguagem, skill e convenções
+20. Documentação: `docs/ARQUITETURA.md`, `FASE_02.md`, `FASE_03_UX_FLUXOS.md`,
    `FASE_05_CHAT_INTEGRADO.md`, `RELATORIO_ESTABILIZACAO_2026-07-15.md`,
    `ROADMAP.md` atualizados

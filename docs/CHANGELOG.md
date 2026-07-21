@@ -25,3 +25,4 @@
    `FASE_05_CHAT_INTEGRADO.md`, `RELATORIO_ESTABILIZACAO_2026-07-15.md`,
    `ROADMAP.md` atualizados
 21. Correção: Iniciar Atividade não bloqueia pull por untracked files (ex: `.opencode/`)
+22. Correção: `open_vscode()` usa `Popen` em vez de `run` — não falha mais se `code .` retornar exit code != 0

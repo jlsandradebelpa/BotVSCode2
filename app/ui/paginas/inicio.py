@@ -365,14 +365,26 @@ class InicioPage:
             )
             for item in files
         ]
+
+        def _toggle_all(_):
+            nova = not all(cb.value for cb in self._file_checkboxes)
+            for cb in self._file_checkboxes:
+                cb.value = nova
+                cb.update()
+
         dialog = ft.AlertDialog(
             title=ft.Text("Selecionar arquivos para o commit"),
             content=ft.Container(
-                content=ft.Column(self._file_checkboxes, scroll=ft.ScrollMode.AUTO),
+                content=ft.Column(
+                    self._file_checkboxes,
+                    scroll=ft.ScrollMode.AUTO,
+                    spacing=8,
+                ),
                 width=650,
                 height=min(420, max(120, len(files) * 48)),
             ),
             actions=[
+                ft.TextButton("Marcar/Desmarcar todas", on_click=_toggle_all),
                 ft.TextButton("Continuar", on_click=self._confirmar_selecao),
                 ft.TextButton("Cancelar", on_click=self._cancelar_commit),
             ],

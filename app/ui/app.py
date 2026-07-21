@@ -352,37 +352,11 @@ class BotVSCode2App:
     def _mostrar_backlog(self, e: ft.ControlEvent) -> None:
         repo = "jlsandradebelpa/BotVSCode2"
 
+        changelog_path = Path(__file__).resolve().parent.parent.parent / "docs" / "CHANGELOG.md"
         try:
-            repo_dir = Path(__file__).resolve().parent.parent.parent
-            kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
-            result = subprocess.run(
-                ["git", "log", "--format=%ad|||%s", "--date=short", "--no-decorate", "-30"],
-                cwd=str(repo_dir),
-                capture_output=True, text=True, encoding="utf-8",
-                timeout=15, **kwargs,
-            )
-            raw = result.stdout.strip() if result.returncode == 0 else ""
+            texto = changelog_path.read_text(encoding="utf-8")
         except Exception:
-            raw = ""
-
-        if raw:
-            linhas = []
-            data_atual = ""
-            seq = 0
-            for linha in raw.split("\n"):
-                if "|||" not in linha:
-                    continue
-                data, msg = linha.split("|||", 1)
-                if data != data_atual:
-                    data_atual = data
-                    seq = 0
-                    linhas.append("")
-                    linhas.append(data)
-                seq += 1
-                linhas.append(f"  {seq}. {msg.strip()}")
-            log_texto = "\n".join(linhas).strip()
-        else:
-            log_texto = "Nenhum histórico encontrado."
+            texto = ""
 
         issues = self._github_service.listar_issues(repo)
         if issues:
@@ -396,9 +370,8 @@ class BotVSCode2App:
             issues_texto = "\n  Nenhuma issue em aberto."
 
         elementos = [
-            ft.Text("Últimas atualizações:", size=14, weight=ft.FontWeight.BOLD),
             ft.Container(
-                content=ft.Text(log_texto, size=12, selectable=True, font_family="monospace"),
+                content=ft.Text(texto, size=12, selectable=True, font_family="monospace"),
                 padding=ft.Padding(top=4, left=0, right=0, bottom=0),
             ),
             ft.Divider(height=16),
@@ -410,7 +383,7 @@ class BotVSCode2App:
         ]
 
         dlg = ft.AlertDialog(
-            title=ft.Text("Backlog de atualizações"),
+            title=ft.Text("Changelog"),
             content=ft.Container(
                 content=ft.Column(elementos),
                 width=680,
@@ -453,7 +426,7 @@ class BotVSCode2App:
             items=[
                 ft.PopupMenuItem(content=ft.Text("Configurações"), icon=ft.Icons.SETTINGS, on_click=self._menu_ir_config),
                 ft.PopupMenuItem(content=ft.Text("Sobre"), icon=ft.Icons.INFO, on_click=self._mostrar_sobre),
-                ft.PopupMenuItem(content=ft.Text("Backlog de atualizações"), icon=ft.Icons.HISTORY, on_click=self._mostrar_backlog),
+                ft.PopupMenuItem(content=ft.Text("Changelog"), icon=ft.Icons.HISTORY, on_click=self._mostrar_backlog),
             ],
         )
 

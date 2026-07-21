@@ -124,7 +124,7 @@ Cada Service é um **wrapper fino** que:
 - Mantém Iniciar/Encerrar Atividade na barra principal
 - Inicia a janela maximizada
 - Gerencia página ativa via `_mudar_aba()`
-- PopupMenuButton com Configurações, Sobre (versão) e Backlog (git log + GitHub issues)
+- PopupMenuButton com Configurações, Sobre (versão) e Changelog (CHANGELOG.md + GitHub issues)
 - Chat integrado com 7 comandos: `/selecionar-projeto`, `/encerrar-atividades`, `/commit <msg>`, `/pendencias`, `/atualizar-documentacao-local`, `/ajuda`
 - Barra de mensagens inferior
 

@@ -24,3 +24,4 @@
 20. Documentação: `docs/ARQUITETURA.md`, `FASE_02.md`, `FASE_03_UX_FLUXOS.md`,
    `FASE_05_CHAT_INTEGRADO.md`, `RELATORIO_ESTABILIZACAO_2026-07-15.md`,
    `ROADMAP.md` atualizados
+21. Correção: Iniciar Atividade não bloqueia pull por untracked files (ex: `.opencode/`)

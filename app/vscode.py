@@ -15,14 +15,12 @@ def open_vscode(project_path: Path) -> bool:
         return False
     try:
         kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
-        result = subprocess.run(
+        subprocess.Popen(
             ["code", "."],
             cwd=str(project_path),
-            capture_output=True,
-            text=True,
             **kwargs,
         )
-        return result.returncode == 0
+        return True
     except FileNotFoundError:
         return False
     except Exception:

@@ -199,7 +199,8 @@ class InicioPage:
             return
 
         changed_files = self._git_service.get_changed_files(projeto.pasta)
-        if changed_files:
+        tracked_changes = [f for f in changed_files if not f.get("status", "").startswith("??")]
+        if tracked_changes:
             self._mostrar_alteracoes_inicio(e, projeto, branch, upstream, status, changed_files)
             return
 
